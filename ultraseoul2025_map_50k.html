@@ -34,6 +34,20 @@
     d3.svg.area = d3.area;
     d3.svg.line = d3.line;
 
+      // 기존 polyfill...
+  d3.svg.area = function() {
+    var a = d3.area();
+    a.interpolate = function(type) { /* ... */ };
+    return a;
+  };
+  d3.svg.line = function() {
+    var l = d3.line();
+    l.interpolate = function(type) { /* ... */ };
+    return l;
+  };
+
+
+    
       // **추가: static interpolate** 
     d3.svg.area.interpolate = function(type) {
         return d3.svg.area().interpolate(type);
