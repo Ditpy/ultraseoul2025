@@ -22,66 +22,19 @@
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <!-- 2) GPX loader -->
   <script src="https://unpkg.com/leaflet-gpx/dist/leaflet-gpx.min.js"></script>
-  <!-- 3) D3 v5 -->
-  <script src="https://d3js.org/d3.v5.min.js"></script>
-  <!-- 4) Polyfill: provide D3 v3 APIs for Elevation plugin compatibility -->
-  <script>
-    // scale.linear → scaleLinear
-    d3.scale = d3.scale || {};
-    d3.scale.linear = d3.scaleLinear;
-    // svg.area with interpolate support
-    d3.svg = d3.svg || {};
-    d3.svg.area = function() {
-      var area = d3.area();
-      area.interpolate = function(type) {
-        var curveMap = {
-          linear: d3.curveLinear,
-          basis: d3.curveBasis,
-          step: d3.curveStep,
-          'step-before': d3.curveStepBefore,
-          'step-after': d3.curveStepAfter
-        };
-        area.curve(curveMap[type] || d3.curveLinear);
-        return area;
-      };
-      return area;
-    };
-    // static helper
-    d3.svg.area.interpolate = function(type) {
-      return d3.svg.area().interpolate(type);
-    };
-    // svg.line with interpolate support
-    d3.svg.line = function() {
-      var line = d3.line();
-      line.interpolate = function(type) {
-        var curveMap = {
-          linear: d3.curveLinear,
-          basis: d3.curveBasis,
-          step: d3.curveStep,
-          'step-before': d3.curveStepBefore,
-          'step-after': d3.curveStepAfter
-        };
-        line.curve(curveMap[type] || d3.curveLinear);
-        return line;
-      };
-      return line;
-    };
-    // static helper
-    d3.svg.line.interpolate = function(type) {
-      return d3.svg.line().interpolate(type);
-    };
-  </script>
-  <!-- 5) Official Elevation plugin JS (loaded after polyfills) -->
+  <!-- 3) D3 v3 로드 (플러그인이 기대하는 버전) -->
+  <script src="https://d3js.org/d3.v3.min.js"></script>
+  <!-- 4) Official Elevation plugin JS (v3 API 위에서 정상 작동) -->
   <script src="https://unpkg.com/leaflet.elevation/dist/Leaflet.Elevation-0.0.2.min.js"></script>
 
   <script>
-    // 6) 지도 초기화
+    // 5) 지도 초기화
     const map = L.map("map").setView([0, 0], 2);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "© OpenStreetMap contributors"
     }).addTo(map);
 
-    // 7) 고도 프로필 컨트롤 변수에 할당
+    // 6) 고도 프로필 컨트롤 변수에 할당
     const elev = L.control.elevation({
       position: "bottomright",
       theme: "steelblue-theme",
@@ -89,13 +42,13 @@
       height: 200
     }).addTo(map);
 
-    // 8) GPX 트랙 로드
+    // 7) GPX 트랙 로드
     new L.GPX(
       "https://raw.githubusercontent.com/Ditpy/ultraseoul2025/main/ultraseoul2025_50k.gpx",
       { async: true }
     )
-      .on("loaded", e => map.fitBounds(e.target.getBounds()))
-      .on("addline", e => elev.addData(e.line))
+      .on("loaded", function(e) { map.fitBounds(e.target.getBounds()); })
+      .on("addline", function(e) { elev.addData(e.line); })
       .addTo(map);
   </script>
 </body>
