@@ -29,6 +29,9 @@
   <script src="https://unpkg.com/leaflet-gpx/dist/leaflet-gpx.min.js"></script>
   <!-- 3) D3 v5 -->
   <script src="https://d3js.org/d3.v5.min.js"></script>
+<!-- 5) Elevation plugin JS (공식 패키지) -->
+  <script src="https://unpkg.com/leaflet.elevation/dist/Leaflet.Elevation-0.0.2.min.js"></script>
+
   <!-- 4) Polyfill: d3.scale.linear → d3.scaleLinear -->
   <script>
     // Leaflet.Elevation 0.0.2 는 d3.scale.linear() 를 호출하도록 되어 있으므로,
@@ -36,9 +39,7 @@
     d3.scale = d3.scale || {};
     d3.scale.linear = d3.scaleLinear;
   </script>
-  <!-- 5) Elevation plugin JS (공식 패키지) -->
-  <script src="https://unpkg.com/leaflet.elevation/dist/Leaflet.Elevation-0.0.2.min.js"></script>
-
+  
   <script>
     // 6) 지도 초기화
     const map = L.map("map").setView([0, 0], 2);
