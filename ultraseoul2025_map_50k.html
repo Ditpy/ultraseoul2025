@@ -4,7 +4,9 @@
 <head>
   <meta charset="UTF-8" />
   <title>GPX Map & Elevation</title>
+  <!-- Leaflet core CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <!-- Elevation plugin CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet.elevation/dist/Leaflet.Elevation-0.0.2.css" />
   <style>
     html, body { margin:0; padding:0; height:100%; }
@@ -16,9 +18,13 @@
   <div id="map"></div>
   <div id="elevation"></div>
 
+  <!-- Leaflet core JS -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <!-- GPX loader -->
   <script src="https://unpkg.com/leaflet-gpx/dist/leaflet-gpx.min.js"></script>
-  <!-- 고도 프로필 플러그인 로드 (올바른 패키지 이름 사용) -->
+  <!-- D3.js for Elevation plugin -->
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+  <!-- Elevation plugin JS -->
   <script src="https://unpkg.com/leaflet.elevation/dist/Leaflet.Elevation-0.0.2.min.js"></script>
 
   <script>
