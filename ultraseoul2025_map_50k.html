@@ -33,6 +33,14 @@
     d3.svg = d3.svg || {};
     d3.svg.area = d3.area;
     d3.svg.line = d3.line;
+
+      // **추가: static interpolate** 
+    d3.svg.area.interpolate = function(type) {
+        return d3.svg.area().interpolate(type);
+    };
+    d3.svg.line.interpolate = function(type) {
+        return d3.svg.line().interpolate(type);
+    };
   </script>
   <!-- 5) Official Elevation plugin JS (loaded after polyfills) -->
   <script src="https://unpkg.com/leaflet.elevation/dist/Leaflet.Elevation-0.0.2.min.js"></script>
