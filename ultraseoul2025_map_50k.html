@@ -24,36 +24,51 @@
   <script src="https://unpkg.com/leaflet-gpx/dist/leaflet-gpx.min.js"></script>
   <!-- 3) D3 v5 -->
   <script src="https://d3js.org/d3.v5.min.js"></script>
-  <!-- 4) Polyfill: add missing D3 v3 APIs for Elevation plugin compatibility -->
+  <!-- 4) Polyfill: provide D3 v3 APIs for Elevation plugin compatibility -->
   <script>
-    // scale
+    // scale.linear → scaleLinear
     d3.scale = d3.scale || {};
     d3.scale.linear = d3.scaleLinear;
-    // svg area & line
+    // svg.area with interpolate support
     d3.svg = d3.svg || {};
-    d3.svg.area = d3.area;
-    d3.svg.line = d3.line;
-
-      // 기존 polyfill...
-  d3.svg.area = function() {
-    var a = d3.area();
-    a.interpolate = function(type) { /* ... */ };
-    return a;
-  };
-  d3.svg.line = function() {
-    var l = d3.line();
-    l.interpolate = function(type) { /* ... */ };
-    return l;
-  };
-
-
-    
-      // **추가: static interpolate** 
-    d3.svg.area.interpolate = function(type) {
-        return d3.svg.area().interpolate(type);
+    d3.svg.area = function() {
+      var area = d3.area();
+      area.interpolate = function(type) {
+        var curveMap = {
+          linear: d3.curveLinear,
+          basis: d3.curveBasis,
+          step: d3.curveStep,
+          'step-before': d3.curveStepBefore,
+          'step-after': d3.curveStepAfter
+        };
+        area.curve(curveMap[type] || d3.curveLinear);
+        return area;
+      };
+      return area;
     };
+    // static helper
+    d3.svg.area.interpolate = function(type) {
+      return d3.svg.area().interpolate(type);
+    };
+    // svg.line with interpolate support
+    d3.svg.line = function() {
+      var line = d3.line();
+      line.interpolate = function(type) {
+        var curveMap = {
+          linear: d3.curveLinear,
+          basis: d3.curveBasis,
+          step: d3.curveStep,
+          'step-before': d3.curveStepBefore,
+          'step-after': d3.curveStepAfter
+        };
+        line.curve(curveMap[type] || d3.curveLinear);
+        return line;
+      };
+      return line;
+    };
+    // static helper
     d3.svg.line.interpolate = function(type) {
-        return d3.svg.line().interpolate(type);
+      return d3.svg.line().interpolate(type);
     };
   </script>
   <!-- 5) Official Elevation plugin JS (loaded after polyfills) -->
