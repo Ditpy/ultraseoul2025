@@ -1,3 +1,4 @@
+<!-- map.html -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -8,7 +9,7 @@
     rel="stylesheet"
     href="https://unpkg.com/leaflet/dist/leaflet.css"
   />
-  <!-- Elevation plugin CSS (공식 패키지) -->
+  <!-- Official Elevation plugin CSS -->
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet.elevation/dist/Leaflet.Elevation-0.0.2.css"
@@ -29,19 +30,16 @@
   <script src="https://unpkg.com/leaflet-gpx/dist/leaflet-gpx.min.js"></script>
   <!-- 3) D3 v5 -->
   <script src="https://d3js.org/d3.v5.min.js"></script>
-
-  <!-- 4) Polyfill: d3.scale.linear → d3.scaleLinear -->
+  <!-- 4) Polyfill: add d3.scale.linear and d3.svg.area for plugin compatibility -->
   <script>
-    // Leaflet.Elevation 0.0.2 는 d3.scale.linear() 를 호출하도록 되어 있으므로,
-    // d3.scaleLinear() 를 연결해 줍니다.
     d3.scale = d3.scale || {};
     d3.scale.linear = d3.scaleLinear;
+    d3.svg = d3.svg || {};
+    d3.svg.area = d3.area;
   </script>
-
-  <!-- 5) Elevation plugin JS (공식 패키지) -->
+  <!-- 5) Official Elevation plugin JS (loaded after polyfills) -->
   <script src="https://unpkg.com/leaflet.elevation/dist/Leaflet.Elevation-0.0.2.min.js"></script>
 
-  
   <script>
     // 6) 지도 초기화
     const map = L.map("map").setView([0, 0], 2);
@@ -57,7 +55,7 @@
       height: 200
     }).addTo(map);
 
-    // 8) GPX 트랙 로드 (반드시 .gpx 파일 URL을 가리킵니다)
+    // 8) GPX 트랙 로드
     new L.GPX(
       "https://raw.githubusercontent.com/Ditpy/ultraseoul2025/main/ultraseoul2025_50k.gpx",
       { async: true }
