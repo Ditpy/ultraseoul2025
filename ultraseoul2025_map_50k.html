@@ -1,13 +1,18 @@
-<!-- map.html -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
   <title>GPX Map & Elevation</title>
   <!-- Leaflet core CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <!-- Elevation plugin CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.elevation/dist/Leaflet.Elevation-0.0.2.css" />
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet/dist/leaflet.css"
+  />
+  <!-- Elevation plugin CSS (공식 패키지) -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet.elevation/dist/Leaflet.Elevation-0.0.2.css"
+  />
   <style>
     html, body { margin:0; padding:0; height:100%; }
     #map { width:100%; height:60%; }
@@ -18,23 +23,30 @@
   <div id="map"></div>
   <div id="elevation"></div>
 
-  <!-- Leaflet core JS -->
+  <!-- 1) Leaflet core JS -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <!-- GPX loader -->
+  <!-- 2) GPX loader -->
   <script src="https://unpkg.com/leaflet-gpx/dist/leaflet-gpx.min.js"></script>
-  <!-- D3.js for Elevation plugin -->
+  <!-- 3) D3 v5 -->
   <script src="https://d3js.org/d3.v5.min.js"></script>
-  <!-- Elevation plugin JS -->
+  <!-- 4) Polyfill: d3.scale.linear → d3.scaleLinear -->
+  <script>
+    // Leaflet.Elevation 0.0.2 는 d3.scale.linear() 를 호출하도록 되어 있으므로,
+    // d3.scaleLinear() 를 연결해 줍니다.
+    d3.scale = d3.scale || {};
+    d3.scale.linear = d3.scaleLinear;
+  </script>
+  <!-- 5) Elevation plugin JS (공식 패키지) -->
   <script src="https://unpkg.com/leaflet.elevation/dist/Leaflet.Elevation-0.0.2.min.js"></script>
 
   <script>
-    // 1) 지도 초기화
+    // 6) 지도 초기화
     const map = L.map("map").setView([0, 0], 2);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "© OpenStreetMap contributors"
     }).addTo(map);
 
-    // 2) 고도 프로필 컨트롤 초기화 및 변수에 할당
+    // 7) 고도 프로필 컨트롤 변수에 할당
     const elev = L.control.elevation({
       position: "bottomright",
       theme: "steelblue-theme",
@@ -42,7 +54,7 @@
       height: 200
     }).addTo(map);
 
-    // 3) GPX 트랙 로드
+    // 8) GPX 트랙 로드 (반드시 .gpx 파일 URL을 가리킵니다)
     new L.GPX(
       "https://raw.githubusercontent.com/Ditpy/ultraseoul2025/main/ultraseoul2025_50k.gpx",
       { async: true }
