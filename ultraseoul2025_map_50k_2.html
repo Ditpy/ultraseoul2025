@@ -14,9 +14,9 @@
     }
     #map {
       width: 1080px; height: 350px; margin:0 auto;
+      filter: saturate(0.3) hue-rotate(-120deg) brightness(1.15) contrast(1.07);
       border-radius: 0; box-shadow: none;
       position: relative;
-      background: #191c1d;
     }
     #infoBar {
       width: 1080px; height: 70px;
@@ -46,41 +46,30 @@
       margin: 0; border: none; z-index: 2;
     }
     #elevationBox {
-      width: 1080px; height: 300px; background: none;
+      width: 1080px; height: 300px; background: #fff;
       border-radius: 0; box-shadow: none; margin:0; position:relative;
       display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
     }
     #elevation {
-      width: 1040px; height: 300px; border-radius: 0; display:block; margin:0 auto;
-      background: none; /* 흰 배경 제거 */
+      width: 1040px; height: 300px; background: #fff; border-radius: 0; display:block; margin:0 auto;
     }
     /* CP marker on elevation */
     .cp-elev-marker {
       position: absolute; width: 0; height: 300px; left:0; top:0; pointer-events: none;
       z-index: 3;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
     }
     .cp-elev-circle {
-      position: absolute; left: 50%; transform: translateX(-50%);
-      width: 16px; height:16px; border-radius: 50%;
+      position: absolute; bottom: 0; left: -8px; width: 16px; height:16px; border-radius: 50%;
       background: #ce1126; border: 2px solid #fff; z-index: 4;
-      /* dot 중앙 위치에 맞춰서 배치, JS에서 top 지정 */
     }
     .cp-elev-line {
-      position: absolute; left: 50%; transform: translateX(-50%);
-      width: 2px; background: #ce1126; z-index: 3;
-      /* 중앙정렬 */
+      position: absolute; left: 0; width: 2px; background: #ce1126; z-index: 3;
     }
     .cp-elev-label {
-      position: absolute; left: 50%; transform: translateX(-50%);
-      /* dot 위로 띄우기, JS에서 top 지정 */
-      background: #ce1126; color:#fff; font-weight:700; font-size:1em; border-radius:0.9em;
-      padding: 0.15em 0.9em; white-space:nowrap; z-index:5;
-      box-shadow:none;
-      text-align: center;
+      position: absolute; left: 50%; top: -24px; transform: translateX(-50%);
+      background: #ce1126; color: #fff; font-weight: 700; font-size: 1em; border-radius: 0.9em;
+      padding: 0.15em 0.9em; white-space: nowrap; z-index: 5;
+      box-shadow: none;
     }
     /* 지도 라벨(말풍선) */
     .balloon-label {
@@ -271,6 +260,7 @@
   // 고도표 차트, CP/10k 표시
   function drawElevationChart() {
     if (!elevations.length || !distances.length) return;
+    const kmArr = distances.map(m=>(m/1000).toFixed(2));
     const ctx = document.getElementById('elevation').getContext('2d');
     if(chart) chart.destroy();
 
@@ -279,17 +269,21 @@
     grad.addColorStop(0, "rgba(22,100,154,0.23)");
     grad.addColorStop(1, "rgba(22,100,154,0)");
 
-    // 고도축 단계 (0 ~ max, 4등분, 100단위 반올림, +1단계 여유)
-    const elevMax = Math.max(...elevations);
-    const step = Math.ceil(elevMax/4/100)*100;
-    const yTicks = [0, step, step*2, step*3, step*4, step*5];
-    const yMax = yTicks[4]; // 그래프 최상단은 1단계 여유(수치 없음)
-    const yMin = 0;
+    // 고도축 단계(3개만)
+    const maxEle = Math.max(...elevations), minEle = Math.min(...elevations);
+    const yTicks = [
+      Math.round(minEle/100)*100,
+      Math.round((minEle+maxEle)/2/100)*100,
+      Math.round(maxEle/100)*100
+    ];
+
+    // 10k마다 x축 눈금
+    const xLabels = distances.map(m=>(m/1000).toFixed(1));
 
     chart = new Chart(ctx,{
       type:'line',
       data:{
-        labels: distances.map(m=>(m/1000).toFixed(2)),
+        labels: xLabels,
         datasets:[{
           label:'고도(m)',
           data: elevations,
@@ -325,14 +319,14 @@
             display: true,
             position: 'left',
             grid: {display: false, drawBorder: false},
-            min: yMin,
-            max: yMax,
             ticks: {
               color: '#16649A',
               callback: function(value) {
-                return yTicks.includes(value) && value !== yMax ? value + 'm' : '';
+                return yTicks.includes(value) ? value + 'm' : '';
               }
-            }
+            },
+            min: yTicks[0],
+            max: yTicks[2]
           }
         },
         animation: false,
@@ -351,40 +345,28 @@
     };
     document.getElementById('elevation').onmouseleave = hideElevTooltip;
 
-    // CP 마커 동적 생성 (dot 중앙이 해당 km 위치의 고도 그래프선과 정확히 만남)
+    // CP, 10k 마커 동적 생성
     const elevBox = document.getElementById('elevationBox');
     elevBox.querySelectorAll('.cp-elev-marker').forEach(e=>e.remove());
 
+    // CP 세로선, 동그라미, 텍스트 (상단~그래프 라인까지)
     CPs.forEach(cp=>{
-      // km 위치 찾기(보간)
       let idx = distances.findIndex(d=>d/1000 >= cp.km);
       if(idx < 0) idx = distances.length-1;
-      let elevVal;
-      if (distances[idx]/1000 === cp.km || idx === 0) {
-        elevVal = elevations[idx];
-      } else {
-        // 보간
-        const prevIdx = idx-1;
-        const d1 = distances[prevIdx]/1000, d2 = distances[idx]/1000;
-        const e1 = elevations[prevIdx], e2 = elevations[idx];
-        const ratio = (cp.km-d1)/(d2-d1);
-        elevVal = e1 + (e2-e1)*ratio;
-      }
-      // x좌표(그래프 폭 1040px)
-      const left = (cp.km/(distances[distances.length-1]/1000))*1040;
-      // y좌표(고도축 반영, dot 중앙이 그래프선과 정확히 만남)
-      const y = ((yMax-elevVal)/(yMax-yMin))*300;
+      const left = (distances[idx]/distances[distances.length-1])*1040;
+      const maxEle = Math.max(...elevations), minEle = Math.min(...elevations);
+      const elev = elevations[idx];
+      const y = ((maxEle-elev)/(maxEle-minEle))*(300-40)+20;
       const marker = document.createElement('div');
       marker.className = 'cp-elev-marker';
       marker.style.left = `${left}px`;
-      marker.style.top = '0';
-
-      // 중앙정렬로 dot, 라벨, 라인 배치(JS에서 위치 지정)
       marker.innerHTML = `
-        <div class="cp-elev-line" style="height:${y-8}px;top:0;"></div>
-        <div class="cp-elev-circle" style="top:${y-8}px;"></div>
-        <div class="cp-elev-label" style="top:${y-36}px;">${cp.name}<span style="font-weight:400;"> ${cp.km}k</span></div>
+        <div class="cp-elev-line" style="height:${y}px;top:0;"></div>
+        <div class="cp-elev-circle" style="bottom:${300-y-8}px;"></div>
+        <div class="cp-elev-label">${cp.name}<span style="font-weight:400;"> ${cp.km}k</span></div>
       `;
+      marker.style.top = '0';
+      marker.style.position = 'absolute';
       elevBox.appendChild(marker);
     });
   }
@@ -398,15 +380,8 @@
 
     // Esri World Imagery (고화질 항공지도)
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-      maxZoom:17,
-      attribution:'Tiles © Esri, Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community'
+      maxZoom:17, attribution:'Tiles © Esri'
     }).addTo(map);
-
-    // // OSM 기본지도를 쓰고 싶으면 아래 주석 해제
-    // L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    //   maxZoom: 19,
-    //   attribution: '&copy; OpenStreetMap contributors'
-    // }).addTo(map);
 
     fetch(gpxUrl)
       .then(res=>{
