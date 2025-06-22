@@ -4,24 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=1300">
   <title>ULTRA SEOUL 2025 - 50K GPX</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <!-- Pretendard: 반드시 CDN으로만! -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.8/dist/web/static/pretendard.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <style>
     :root {
       --color-point: #e70013;
-      --color-point-dark: #b6000f;
-      --color-point-hover: #c90012;
-      --color-point-disabled: #888b92;
-      --color-white: #fff;
       --color-elev-line: #16649A;
+      --color-x-label: #e70013;
+      --color-x-label-cp: #e70013;
       --btn-radius: 2.2em;
       --btn-font: Pretendard, 'Segoe UI', Arial, sans-serif;
-      --btn-shadow: 0 6px 19px rgba(231,0,19,0.14);
-      --btn-padding: 0.74em 2.3em;
-      --btn-font-size: 1.1em;
-      --btn-font-size-mobile: 0.98em;
-      --btn-letter-spacing: 0.01em;
-      --btn-transition: background .18s, box-shadow .18s, color .15s;
     }
     html, body { margin:0; padding:0; background:#191c1d; font-family:Pretendard, 'Segoe UI', Arial, sans-serif; }
     #container { max-width: 1300px; margin: 0 auto; }
@@ -56,6 +49,37 @@
     }
     #downloadBox .ultraseoul-btn {
       margin-top: 0.5em;
+    }
+    .ultraseoul-btn {
+      background: var(--color-point);
+      color: #fff;
+      font-family: Pretendard, 'Segoe UI', Arial, sans-serif;
+      font-size: 1.1em;
+      font-weight: 700;
+      border: none;
+      border-radius: var(--btn-radius);
+      box-shadow: 0 6px 19px rgba(231,0,19,0.14);
+      padding: 0.74em 2.3em;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      transition: background .18s, box-shadow .18s, color .15s;
+      display: inline-block;
+      user-select: none;
+      min-width: 9em;
+      text-align: center;
+      text-decoration: none;
+    }
+    .ultraseoul-btn:hover,
+    .ultraseoul-btn:focus {
+      background: #c90012;
+      box-shadow: 0 4px 13px rgba(231,0,19,0.17);
+      color: #fff;
+      text-decoration: none;
+    }
+    .ultraseoul-btn:active {
+      background: #b6000f;
+      color: #fff;
+      box-shadow: 0 1.5px 5px rgba(231,0,19,0.10);
     }
     #elevationBox {
       width: 100vw; max-width: 1300px; min-width: 320px;
@@ -138,53 +162,11 @@
       display: inline-block; letter-spacing: 0.02em; text-align: center;
       line-height: 1.15em; min-width: 4.7em;
     }
-    /* Button Design System */
-    .ultraseoul-btn {
-      background: var(--color-point);
-      color: var(--color-white);
-      font-family: var(--btn-font);
-      font-size: var(--btn-font-size);
-      font-weight: 700;
-      border: none;
-      outline: none;
-      border-radius: var(--btn-radius);
-      box-shadow: var(--btn-shadow);
-      padding: var(--btn-padding);
-      letter-spacing: var(--btn-letter-spacing);
-      cursor: pointer;
-      transition: var(--btn-transition);
-      margin: 0.5em 0;
-      display: inline-block;
-      user-select: none;
-      min-width: 9em;
-      text-align: center;
-      position: relative;
-      text-decoration: none;
-    }
-    .ultraseoul-btn:hover,
-    .ultraseoul-btn:focus {
-      background: var(--color-point-hover);
-      box-shadow: 0 4px 13px rgba(231,0,19,0.17);
-      color: var(--color-white);
-      text-decoration: none;
-    }
-    .ultraseoul-btn:active {
-      background: var(--color-point-dark);
-      color: var(--color-white);
-      box-shadow: 0 1.5px 5px rgba(231,0,19,0.10);
-    }
-    .ultraseoul-btn:disabled,
-    .ultraseoul-btn.disabled {
-      background: var(--color-point-disabled);
-      color: #eaeaea;
-      cursor: not-allowed;
-      box-shadow: none;
-    }
     @media (max-width: 900px) {
       #container, #map, #elevationBox { max-width: 99vw; }
       #elevInfoTable { font-size: 1em; min-width: 11em; }
       #downloadBox { min-width: 13em; font-size: 1em; }
-      .ultraseoul-btn { font-size: var(--btn-font-size-mobile); padding: 0.65em 1.3em; min-width: 7em; }
+      .ultraseoul-btn { font-size: 1em; padding: 0.65em 1.3em; min-width: 7em; }
     }
     @media (max-width: 650px) {
       #container, #map, #elevationBox { max-width: 100vw; min-width: 100vw; }
@@ -259,13 +241,11 @@
         latlngs.push([lat,lon]); elevations.push(ele);
         if(i>0) distances[i]=distances[i-1]+getDistance(latlngs[i-1][0],latlngs[i-1][1],lat,lon);
       });
-      // 총상승/하강
       totalAsc=0; totalDesc=0;
       for(let i=1;i<elevations.length;i++){
         const diff=elevations[i]-elevations[i-1];
         if(diff>0) totalAsc+=diff; else totalDesc-=diff;
       }
-      // 코스 라인
       polyline=L.polyline(latlngs,{
         color:'#e70013',weight:6.5,opacity:0.98,lineCap:'round'
       }).addTo(map);
@@ -418,29 +398,22 @@
        <span><span class="label">총하강</span> <span class="value">${desc}m</span></span>
        <span><span class="label">CP</span> <span class="value">${cpCount}개</span></span>`;
   }
-  // CP 표시(4번 이미지 스타일)
   function drawCpMarks(){
     const wrap=document.getElementById('cpMarks'); wrap.innerHTML='';
     const totalDist=distances[distances.length-1]/1000;
     cpList.forEach(({km,label},i)=>{
-      // 해당 km에 가장 가까운 인덱스
       const idx=distances.findIndex(d=>d/1000>=km);
       if(idx===-1) return;
       const left=((km/totalDist)*wrap.offsetWidth);
-      // 세로 라인
       const vline=document.createElement('div');
       vline.className='cp-vertline'; vline.style.left=`${left}px`; wrap.appendChild(vline);
-      // 원
       const dot=document.createElement('div');
       dot.className='cp-dot'; dot.style.left=`${left}px`; wrap.appendChild(dot);
-      // 텍스트
       const txt=document.createElement('div');
       txt.className='cp-label'; txt.style.left=`${left}px`;
       txt.innerHTML=`${label}<br>${km}k`; wrap.appendChild(txt);
     });
   }
-
-  // 지도/고도표 마우스 info
   function showHoverInfo(type, idx, evt) {
     const dist = (distances[idx]/1000).toFixed(2);
     const ele = elevations[idx].toFixed(0);
