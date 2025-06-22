@@ -4,21 +4,119 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=1080">
   <title>ULTRA SEOUL 2025 - 50K GPX</title>
-  <!-- Pretendard CDN (font-face 방식: CSP 에러 없음) -->
+  <!-- Pretendard CDN -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.8/dist/web/static/pretendard.css">
   <!-- Leaflet CSS CDN -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <style>
     html, body { margin:0; padding:0; background:#191c1d; font-family:Pretendard, 'Segoe UI', Arial, sans-serif; }
     #container { max-width: 1080px; margin: 0 auto; }
-    #map { width: 100%; max-width: 648px; height: 158px; border-radius: 1.1em 1.1em 0 0; box-shadow: 0 2px 17px rgba(0,0,0,0.20); background: #181c22; margin:0 auto; }
-    #elevationBox { width: 100%; max-width: 648px; height: 79px; background: #fff; border-radius: 0 0 1.1em 1.1em; box-shadow: 0 2px 10px rgba(0,0,0,0.07); margin: 0 auto 2.8vw auto; position: relative; }
-    #elevInfoTable { position: absolute; left: 50%; top: 0.9em; transform: translateX(-50%); z-index: 10; font-family: Pretendard, 'Segoe UI', Arial, sans-serif; }
-    #elevation { width: 100%; max-width: 606px; height: 75px; margin: 0 auto; display: block; background: #fff; border-radius: 0.6em;}
-    #downloadBox { width: 100%; max-width: 410px; min-width: 160px; background: #e70013; border-radius: 2.2em; color: #fff; font-family: Pretendard, sans-serif; padding: 0.6em 1.5em; box-shadow: 0 6px 24px rgba(231,0,19,0.16); font-size: 1.11em; margin: 2.5em auto 2em auto; text-align: center;}
-    .ultraseoul-btn { background: #e70013; color: #fff; font-family: Pretendard, 'Segoe UI', Arial, sans-serif; font-size: 1.1em; font-weight: 700; border: none; border-radius: 2.2em; box-shadow: 0 6px 19px rgba(231,0,19,0.14); padding: 0.5em 1.4em; min-width: 7em; text-align: center; text-decoration: none; }
-    .ultraseoul-btn:hover { background: #c90012; }
+    #map {
+      width: 60vw; max-width: 1080px; min-width: 320px;
+      height: 14vw; min-height: 110px; max-height: 158px;
+      border-radius: 1.1em 1.1em 0 0;
+      box-shadow: 0 2px 17px rgba(0,0,0,0.20);
+      overflow: hidden;
+      background: #181c22;
+      margin: 0 auto;
+      filter: saturate(0.75) brightness(1.13) contrast(1.16) hue-rotate(-28deg);
+    }
+    #elevationBox {
+      width: 60vw; max-width: 1080px; min-width: 320px;
+      height: 6.33vw; min-height: 45px; max-height: 79px;
+      background: #fff;
+      border-radius: 0 0 1.1em 1.1em;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+      margin: 0 auto 2.8vw auto;
+      position: relative;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-top: 4.9em;
+    }
+    #elevInfoTable {
+      position: absolute;
+      left: 50%; top: 0.9em; transform: translateX(-50%);
+      z-index: 10; display: flex; flex-direction: column; gap: 0.2em; align-items: stretch;
+      background: rgba(255,255,255,0.96); border-radius: 0.8em;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1.5px solid #eee;
+      padding: 0.58em 1em;
+      font-size: 0.97em;
+      font-weight: 500;
+      color: #262626;
+      min-width: 8em;
+      justify-content: center;
+      align-items: center;
+      font-family: Pretendard, 'Segoe UI', Arial, sans-serif;
+      letter-spacing: 0.01em;
+    }
+    .elev-row { display: flex; flex-direction: row; gap: 2.2em; justify-content: flex-start; }
+    .elev-col { min-width: 7em; font-size: 1em; }
+    .label { color: #666; font-weight: 400; margin-right: 0.3em; }
+    .value { color: #e70013; font-weight: 700; }
+    #elevation {
+      width: 97vw; max-width: 1040px; min-width: 120px;
+      height: 6vw; min-height: 40px; max-height: 75px;
+      margin: 0 auto; display: block; background: #fff;
+      border-radius: 0.6em;
+    }
+    #downloadBox {
+      width: 29vw; max-width: 410px; min-width: 160px;
+      min-height: 2.5em;
+      background: #e70013;
+      border-radius: 2.2em;
+      color: #fff;
+      font-family: Pretendard, sans-serif;
+      padding: 0.6em 1.5em;
+      box-shadow: 0 6px 24px rgba(231,0,19,0.16);
+      font-size: 1.11em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      z-index: 10;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      position: static;
+      margin: 2.5em auto 2em auto;
+    }
+    .ultraseoul-btn {
+      background: #e70013;
+      color: #fff;
+      font-family: Pretendard, 'Segoe UI', Arial, sans-serif;
+      font-size: 1.1em;
+      font-weight: 700;
+      border: none;
+      border-radius: 2.2em;
+      box-shadow: 0 6px 19px rgba(231,0,19,0.14);
+      padding: 0.5em 1.4em;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      transition: background .18s, box-shadow .18s, color .15s;
+      display: inline-block;
+      user-select: none;
+      min-width: 7em;
+      text-align: center;
+      text-decoration: none;
+    }
+    .ultraseoul-btn:hover {
+      background: #c90012;
+    }
     #gpxErrorMsg { color: #e70013; font-size: 1.1em; margin: 2em auto; text-align: center; font-family: Pretendard;}
+    @media (max-width: 900px) {
+      #container, #map, #elevationBox { max-width: 99vw; }
+      #elevInfoTable { font-size: 1em; min-width: 11em; }
+      #downloadBox { min-width: 13em; font-size: 1em; }
+      .ultraseoul-btn { font-size: 1em; padding: 0.65em 1.3em; min-width: 7em; }
+      #map, #elevationBox { max-width: 99vw; }
+      #elevation { max-width: 95vw; }
+    }
+    @media (max-width: 650px) {
+      #container, #map, #elevationBox { max-width: 100vw; min-width: 100vw; }
+      #elevInfoTable { padding: 0.4em 0.5em; font-size:0.95em;}
+      #downloadBox { padding: 0.7em 1.2em; font-size: 0.92em;}
+      #elevation { min-width: 120px; max-width: 97vw; }
+    }
   </style>
 </head>
 <body>
@@ -38,9 +136,7 @@
   <!-- Chart.js CDN -->
   <script src="https://unpkg.com/chart.js@4.4.1/dist/chart.umd.js"></script>
   <script>
-  // GPX 파일 경로는 반드시 html과 같은 폴더에 둘 것!
   const gpxUrl = './ultraseoul2025_50k_gm.gpx';
-
   let map, chart, elevations=[], distances=[], latlngs=[];
   let totalAsc=0, totalDesc=0;
 
@@ -64,7 +160,16 @@
     const totalDown = Math.round(totalDesc);
     const totalDist = (distances[distances.length-1]/1000).toFixed(2);
     document.getElementById('elevInfoTable').innerHTML = `
-      <span><b>거리:</b> ${totalDist}km</span> <span><b>누적상승:</b> ${totalUp}m</span> <span><b>누적하강:</b> ${totalDown}m</span> <span><b>최고고도:</b> ${maxEle}m</span>
+      <div class="elev-row">
+        <div class="elev-col"><span class="label">거리</span> <span class="value">${totalDist}km</span></div>
+        <div class="elev-col"><span class="label">누적 상승 고도</span> <span class="value">${totalUp}m</span></div>
+        <div class="elev-col"><span class="label">누적 하강 고도</span> <span class="value">${totalDown}m</span></div>
+      </div>
+      <div class="elev-row">
+        <div class="elev-col"><span class="label">최고 고도</span> <span class="value">${maxEle}m</span></div>
+        <div class="elev-col"></div>
+        <div class="elev-col"></div>
+      </div>
     `;
   }
 
