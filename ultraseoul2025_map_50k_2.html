@@ -2,150 +2,143 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=1080">
+  <meta name="viewport" content="width=1080, initial-scale=1.0">
   <title>ULTRA SEOUL 2025 - 50K GPX</title>
   <!-- Pretendard CDN -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.8/dist/web/static/pretendard.css">
-  <!-- Leaflet CSS CDN -->
+  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <style>
-    html, body { margin:0; padding:0; background:#191c1d; font-family:Pretendard, 'Segoe UI', Arial, sans-serif; }
-    #container { max-width: 1080px; margin: 0 auto; }
-    #map {
-      width: 60vw; max-width: 1080px; min-width: 320px;
-      height: 14vw; min-height: 110px; max-height: 158px;
-      border-radius: 1.1em 1.1em 0 0;
-      box-shadow: 0 2px 17px rgba(0,0,0,0.20);
-      overflow: hidden;
-      background: #181c22;
-      margin: 0 auto;
-      filter: saturate(0.75) brightness(1.13) contrast(1.16) hue-rotate(-28deg);
+    html, body {
+      margin: 0; padding: 0; font-family: Pretendard, 'Segoe UI', Arial, sans-serif; background: #191c1d;
     }
-    #elevationBox {
-      width: 60vw; max-width: 1080px; min-width: 320px;
-      height: 6.33vw; min-height: 45px; max-height: 79px;
-      background: #fff;
-      border-radius: 0 0 1.1em 1.1em;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
-      margin: 0 auto 2.8vw auto;
-      position: relative;
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      padding-top: 4.9em;
+    #container {
+      width: 1080px; height: 860px; margin: 0 auto; background: #191c1d;
+      display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
     }
-    #elevInfoTable {
-      position: absolute;
-      left: 50%; top: 0.9em; transform: translateX(-50%);
-      z-index: 10; display: flex; flex-direction: column; gap: 0.2em; align-items: stretch;
-      background: rgba(255,255,255,0.96); border-radius: 0.8em;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1.5px solid #eee;
-      padding: 0.58em 1em;
-      font-size: 0.97em;
-      font-weight: 500;
-      color: #262626;
-      min-width: 8em;
-      justify-content: center;
-      align-items: center;
-      font-family: Pretendard, 'Segoe UI', Arial, sans-serif;
-      letter-spacing: 0.01em;
-    }
-    .elev-row { display: flex; flex-direction: row; gap: 2.2em; justify-content: flex-start; }
-    .elev-col { min-width: 7em; font-size: 1em; }
-    .label { color: #666; font-weight: 400; margin-right: 0.3em; }
-    .value { color: #e70013; font-weight: 700; }
-    #elevation {
-      width: 97vw; max-width: 1040px; min-width: 120px;
-      height: 6vw; min-height: 40px; max-height: 75px;
-      margin: 0 auto; display: block; background: #fff;
-      border-radius: 0.6em;
-    }
-    #downloadBox {
-      width: 29vw; max-width: 410px; min-width: 160px;
-      min-height: 2.5em;
-      background: #e70013;
-      border-radius: 2.2em;
-      color: #fff;
-      font-family: Pretendard, sans-serif;
-      padding: 0.6em 1.5em;
-      box-shadow: 0 6px 24px rgba(231,0,19,0.16);
-      font-size: 1.11em;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      z-index: 10;
-      font-weight: 500;
-      letter-spacing: 0.01em;
-      position: static;
-      margin: 2.5em auto 2em auto;
-    }
-    .ultraseoul-btn {
-      background: #e70013;
-      color: #fff;
-      font-family: Pretendard, 'Segoe UI', Arial, sans-serif;
-      font-size: 1.1em;
-      font-weight: 700;
+    /* 정보 박스 */
+    #infoBar {
+      width: 100%; min-height: 74px; background: #fff;
+      display: flex; align-items: flex-end; justify-content: space-between;
+      border-radius: 0.7em 0.7em 0 0;
       border: none;
-      border-radius: 2.2em;
-      box-shadow: 0 6px 19px rgba(231,0,19,0.14);
-      padding: 0.5em 1.4em;
-      letter-spacing: 0.01em;
-      cursor: pointer;
-      transition: background .18s, box-shadow .18s, color .15s;
-      display: inline-block;
-      user-select: none;
-      min-width: 7em;
-      text-align: center;
-      text-decoration: none;
+      box-shadow: none;
+      position: relative;
+      padding: 0.5em 0 0.1em 0;
+      margin: 0 auto;
+      font-family: Pretendard, 'Segoe UI', Arial, sans-serif;
     }
-    .ultraseoul-btn:hover {
-      background: #c90012;
+    #infoBarInner {
+      width: 100%; display: flex; justify-content: center; gap: 2.2em;
+      border: none; box-shadow: none; align-items: flex-end;
     }
-    #gpxErrorMsg { color: #e70013; font-size: 1.1em; margin: 2em auto; text-align: center; font-family: Pretendard;}
-    @media (max-width: 900px) {
-      #container, #map, #elevationBox { max-width: 99vw; }
-      #elevInfoTable { font-size: 1em; min-width: 11em; }
-      #downloadBox { min-width: 13em; font-size: 1em; }
-      .ultraseoul-btn { font-size: 1em; padding: 0.65em 1.3em; min-width: 7em; }
-      #map, #elevationBox { max-width: 99vw; }
-      #elevation { max-width: 95vw; }
+    .infoCol {
+      display: flex; flex-direction: column; align-items: center; justify-content: flex-end; min-width: 90px;
+      font-size: 1.09em; margin: 0 12px;
     }
-    @media (max-width: 650px) {
-      #container, #map, #elevationBox { max-width: 100vw; min-width: 100vw; }
-      #elevInfoTable { padding: 0.4em 0.5em; font-size:0.95em;}
-      #downloadBox { padding: 0.7em 1.2em; font-size: 0.92em;}
-      #elevation { min-width: 120px; max-width: 97vw; }
+    .infoLabel {
+      color: #888; font-size: 0.97em; font-weight: 400; letter-spacing: 0.02em; margin-bottom: 0.08em;
+    }
+    .infoValue {
+      color: #222; font-size: 1.18em; font-weight: 700; letter-spacing: 0.01em;
+    }
+    /* 붉은 구분선 */
+    #infoBarLine {
+      width: 100%; height: 2px; background: #ce1126; margin: 0; border: none;
+      position: absolute; left: 0; bottom: -1px; z-index: 1;
+    }
+    /* 지도 */
+    #map {
+      width: 1080px; height: 390px; margin: 0 auto; border-radius: 0 0 0 0;
+      filter: saturate(1.3) hue-rotate(-30deg) brightness(1.12) contrast(1.13);
+      /* 채도 30% ↑, 푸른색 계열 */
+    }
+    /* 고도표 */
+    #elevationBox {
+      width: 1080px; height: 180px; background: #fff;
+      border-radius: 0 0 0.8em 0.8em; box-shadow: none; margin: 0; position: relative;
+      display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+      overflow: visible;
+    }
+    #elevation {
+      width: 1040px; height: 150px; margin: 0 auto; background: #fff; border-radius: 0.45em;
+      display: block; box-shadow: none;
+    }
+    /* CP 마커 */
+    .cp-marker {
+      background: #ce1126; color: #fff; font-size: 1em; font-weight: 700;
+      padding: 0.24em 0.8em; border-radius: 1.1em; border: none;
+      position: absolute; z-index: 2;
+      box-shadow: none;
+    }
+    /* 지도 마우스오버 정보 */
+    .map-tooltip {
+      position: absolute; z-index: 9999;
+      background: #b12d2d; color: #fff;
+      font-size: 1.05em; font-weight: 600; border-radius: 0.45em;
+      padding: 0.26em 0.9em; pointer-events: none;
+      white-space: nowrap; box-shadow: none; border: none;
+      opacity: 0.97;
+    }
+    /* 고도표 마우스오버 정보 */
+    .elev-tooltip {
+      position: absolute; z-index: 1000;
+      background: #b12d2d; color: #fff;
+      font-size: 1.04em; font-weight: 600; border-radius: 0.45em;
+      padding: 0.25em 0.8em; pointer-events: none;
+      white-space: nowrap; box-shadow: none; border: none;
+      opacity: 0.97;
     }
   </style>
 </head>
 <body>
   <div id="container">
+    <div id="infoBar">
+      <div id="infoBarInner">
+        <div class="infoCol">
+          <span class="infoLabel">거리</span>
+          <span class="infoValue" id="infoDistance">--</span>
+        </div>
+        <div class="infoCol">
+          <span class="infoLabel">누적 상승고도</span>
+          <span class="infoValue" id="infoAsc">--</span>
+        </div>
+        <div class="infoCol">
+          <span class="infoLabel">누적 하강고도</span>
+          <span class="infoValue" id="infoDesc">--</span>
+        </div>
+        <div class="infoCol">
+          <span class="infoLabel">최고 고도</span>
+          <span class="infoValue" id="infoMaxEle">--</span>
+        </div>
+      </div>
+      <div id="infoBarLine"></div>
+    </div>
     <div id="map"></div>
     <div id="elevationBox">
-      <div id="elevInfoTable"></div>
       <canvas id="elevation"></canvas>
-      <div id="gpxErrorMsg" style="display:none;"></div>
-    </div>
-    <div id="downloadBox">
-      <a href="./ultraseoul2025_50k_gm.gpx" download="ultraseoul2025_50k_gm.gpx" class="ultraseoul-btn">GPX DOWNLOAD</a>
+      <div id="elevTooltip" class="elev-tooltip" style="display:none"></div>
     </div>
   </div>
-  <!-- Leaflet JS CDN -->
+  <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <!-- Chart.js CDN -->
+  <!-- Chart.js -->
   <script src="https://unpkg.com/chart.js@4.4.1/dist/chart.umd.js"></script>
   <script>
-  const gpxUrl = './ultraseoul2025_50k_gm.gpx';
+  // =================== GPX, 지도, 고도표 ===================
+  const gpxUrl = './ultraseoul2025_50k_gm.gpx'; // GPX 파일명을 올바르게!
   let map, chart, elevations=[], distances=[], latlngs=[];
-  let totalAsc=0, totalDesc=0;
+  let totalAsc=0, totalDesc=0, maxEle=0;
 
-  function showGpxError(msg) {
-    const errBox = document.getElementById('gpxErrorMsg');
-    errBox.style.display = 'block';
-    errBox.innerText = msg || "코스 GPX 파일을 불러올 수 없습니다. 파일 위치와 파일명을 확인해 주세요.";
+  // 거리/고도 정보 업데이트
+  function updateInfoBar() {
+    document.getElementById('infoDistance').textContent = distances.length ? (distances[distances.length-1]/1000).toFixed(2)+'km' : '--';
+    document.getElementById('infoAsc').textContent = Math.round(totalAsc)+'m';
+    document.getElementById('infoDesc').textContent = Math.round(totalDesc)+'m';
+    document.getElementById('infoMaxEle').textContent = maxEle+'m';
   }
 
+  // 거리 계산
   function getDistance(lat1,lon1,lat2,lon2){
     const R=6371000,toRad=x=>x*Math.PI/180;
     const dLat=toRad(lat2-lat1),dLon=toRad(lon2-lon1);
@@ -153,26 +146,38 @@
     return 2*R*Math.asin(Math.sqrt(a));
   }
 
-  function drawElevInfoTable() {
-    if (!elevations.length || !distances.length) return;
-    const maxEle = Math.max(...elevations);
-    const totalUp = Math.round(totalAsc);
-    const totalDown = Math.round(totalDesc);
-    const totalDist = (distances[distances.length-1]/1000).toFixed(2);
-    document.getElementById('elevInfoTable').innerHTML = `
-      <div class="elev-row">
-        <div class="elev-col"><span class="label">거리</span> <span class="value">${totalDist}km</span></div>
-        <div class="elev-col"><span class="label">누적 상승 고도</span> <span class="value">${totalUp}m</span></div>
-        <div class="elev-col"><span class="label">누적 하강 고도</span> <span class="value">${totalDown}m</span></div>
-      </div>
-      <div class="elev-row">
-        <div class="elev-col"><span class="label">최고 고도</span> <span class="value">${maxEle}m</span></div>
-        <div class="elev-col"></div>
-        <div class="elev-col"></div>
-      </div>
-    `;
+  // 지도 마우스오버용 Tooltip
+  let mapTooltip;
+  function showMapTooltip(latlng, text) {
+    if (!mapTooltip) {
+      mapTooltip = document.createElement('div');
+      mapTooltip.className = 'map-tooltip';
+      document.body.appendChild(mapTooltip);
+    }
+    mapTooltip.innerHTML = text;
+    const point = map.latLngToContainerPoint(latlng);
+    const mapRect = document.getElementById('map').getBoundingClientRect();
+    mapTooltip.style.left = (window.scrollX + mapRect.left + point.x + 10) + 'px';
+    mapTooltip.style.top = (window.scrollY + mapRect.top + point.y - 20) + 'px';
+    mapTooltip.style.display = 'block';
+  }
+  function hideMapTooltip() {
+    if (mapTooltip) mapTooltip.style.display = 'none';
   }
 
+  // 고도표 마우스오버용 Tooltip
+  function showElevTooltip(x, y, text) {
+    const elevTooltip = document.getElementById('elevTooltip');
+    elevTooltip.innerHTML = text;
+    elevTooltip.style.left = (x + 30) + 'px';
+    elevTooltip.style.top = (y + 140) + 'px';
+    elevTooltip.style.display = 'block';
+  }
+  function hideElevTooltip() {
+    document.getElementById('elevTooltip').style.display = 'none';
+  }
+
+  // 고도표 차트
   function drawElevationChart() {
     if (!elevations.length || !distances.length) return;
     const kmArr=distances.map(m=>(m/1000).toFixed(2));
@@ -184,19 +189,73 @@
         labels:kmArr,
         datasets:[{
           label:'고도(m)',data:elevations,
-          borderColor:'#16649A',
-          backgroundColor:'rgba(22,100,154,0.10)',
-          borderWidth:2, pointRadius:0, fill:true, tension:0.15
+          borderColor:'#ce1126',
+          backgroundColor:'rgba(206,17,38,0.08)',
+          borderWidth:2.3, pointRadius:0, fill:true, tension:0.17
         }]
       },
       options:{
-        responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{display:false},tooltip:{enabled:true}},
+        responsive:false,maintainAspectRatio:false,
+        plugins:{
+          legend:{display:false},
+          tooltip:{enabled:false}
+        },
         scales:{
-          x:{display:true,title:{display:true,text:'Distance(km)'}},
-          y:{display:true,title:{display:true,text:'Height(m)'}}
-        }
+          x:{display:true,title:{display:true,text:'거리(km)'}},
+          y:{display:true,title:{display:true,text:'고도(m)'}}
+        },
+        animation:false,
+        events: []
       }
+    });
+
+    // 고도표 마우스오버 이벤트
+    document.getElementById('elevation').onmousemove = function(e){
+      const rect = e.target.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const idx = Math.round((x / rect.width) * (elevations.length-1));
+      if (elevations[idx] && distances[idx]) {
+        showElevTooltip(e.clientX, rect.top, `<b>${(distances[idx]/1000).toFixed(2)}km</b>, <b>${elevations[idx]}m</b>`);
+      }
+    }
+    document.getElementById('elevation').onmouseleave = function(){ hideElevTooltip(); }
+  }
+
+  // 지도, 코스, 마우스오버, CP
+  function addCourseLine() {
+    // 코스 라인
+    const polyline = L.polyline(latlngs, {
+      color:'#ce1126', weight:4.4, opacity:0.98, lineCap:'round'
+    }).addTo(map);
+
+    // 지도 마우스오버 고도/거리 정보
+    polyline.on('mousemove', function(e){
+      // polyline에서 가장 가까운 index 찾기
+      let minI = 0, minDist = Infinity;
+      for(let i=0;i<latlngs.length;i++){
+        const d = Math.abs(e.latlng.lat-latlngs[i][0]) + Math.abs(e.latlng.lng-latlngs[i][1]);
+        if (d < minDist) { minDist = d; minI = i; }
+      }
+      if (elevations[minI] && distances[minI])
+        showMapTooltip(e.latlng, `<b>${(distances[minI]/1000).toFixed(2)}km</b>, <b>${elevations[minI]}m</b>`);
+    });
+    polyline.on('mouseout', hideMapTooltip);
+
+    // CP 마커(붉은 스타일, 예시)
+    const cps = [
+      {name:'CP1', dist:10, lat:37.11, lng:128.99},
+      {name:'CP2', dist:19, lat:37.09, lng:129.01},
+      {name:'CP3', dist:30, lat:37.13, lng:128.95},
+      {name:'CP4', dist:36, lat:37.16, lng:128.98},
+      {name:'CP5', dist:44, lat:37.15, lng:129.00}
+    ];
+    cps.forEach(cp=>{
+      L.marker([cp.lat, cp.lng], {
+        icon: L.divIcon({
+          className: '', html: `<div class="cp-marker">${cp.name} <span style="font-weight:400;">${cp.dist}km</span></div>`, iconSize:[80,26]
+        })
+      }).addTo(map);
     });
   }
 
@@ -208,6 +267,7 @@
       zoomControl:false, attributionControl:false,
     }).setView([37.125,128.97],12);
 
+    // 타일(위성, 색감보정)
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       maxZoom:17, attribution:'Tiles © Esri'
     }).addTo(map);
@@ -219,35 +279,27 @@
         return res.text();
       })
       .then(xmlText=>{
-        try {
-          document.getElementById('gpxErrorMsg').style.display = 'none';
-          const parser=new DOMParser();
-          const xml=parser.parseFromString(xmlText,"application/xml");
-          const trkpts=xml.querySelectorAll('trkpt');
-          if (trkpts.length === 0) throw new Error();
-          latlngs=[]; elevations=[]; distances=[0];
-          trkpts.forEach((pt,i)=>{
-            const lat=+pt.getAttribute('lat'), lon=+pt.getAttribute('lon');
-            const ele=+pt.querySelector('ele').textContent;
-            latlngs.push([lat,lon]); elevations.push(ele);
-            if(i>0) distances[i]=distances[i-1]+getDistance(latlngs[i-1][0],latlngs[i-1][1],lat,lon);
-          });
-          totalAsc=0; totalDesc=0;
-          for(let i=1;i<elevations.length;i++){
-            const diff=elevations[i]-elevations[i-1];
-            if(diff>0) totalAsc+=diff; else totalDesc-=diff;
-          }
-          const polyline=L.polyline(latlngs,{
-            color:'#16649A',weight:4,opacity:0.99,lineCap:'round'
-          }).addTo(map);
-          map.fitBounds(polyline.getBounds(),{padding:[17,17]});
-          drawElevInfoTable();
-          drawElevationChart();
-        } catch(e) {
-          showGpxError();
+        const parser=new DOMParser();
+        const xml=parser.parseFromString(xmlText,"application/xml");
+        const trkpts=xml.querySelectorAll('trkpt');
+        latlngs=[]; elevations=[]; distances=[0];
+        trkpts.forEach((pt,i)=>{
+          const lat=+pt.getAttribute('lat'), lon=+pt.getAttribute('lon');
+          const ele=+pt.querySelector('ele').textContent;
+          latlngs.push([lat,lon]); elevations.push(ele);
+          if(i>0) distances[i]=distances[i-1]+getDistance(latlngs[i-1][0],latlngs[i-1][1],lat,lon);
+        });
+        totalAsc=0; totalDesc=0; maxEle=0;
+        for(let i=1;i<elevations.length;i++){
+          const diff=elevations[i]-elevations[i-1];
+          if(diff>0) totalAsc+=diff; else totalDesc-=diff;
+          if (elevations[i]>maxEle) maxEle=Math.round(elevations[i]);
         }
-      })
-      .catch(()=>showGpxError());
+        map.fitBounds(L.polyline(latlngs).getBounds(),{padding:[20,20]});
+        updateInfoBar();
+        drawElevationChart();
+        addCourseLine();
+      });
   };
   </script>
 </body>
