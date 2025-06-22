@@ -1,98 +1,201 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>산악 GPX 루트 + 고도 프로필</title>
+  <meta charset="UTF-8">
+  <title>Ultraseoul2025 50k - Tracedetrail Map Style</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
-    html, body { margin:0; padding:0; height:100%; }
-    #map { position:absolute; top:0; left:0; width:100%; height:60%; }
-    #elevation { position:absolute; bottom:0; left:0; width:100%; height:40%; }
-    /* 호버 시 거리/고도 출력 박스 */
-    #info {
+    body { margin:0; padding:0; }
+    #map { height: 60vh; }
+    #elevation { height: 30vh; }
+    #infoBox {
       position: absolute;
-      top: 10px; left: 10px;
-      background: rgba(255,255,255,0.8);
-      padding: 6px 10px;
-      border-radius: 4px;
-      font-family: sans-serif;
-      font-size: 14px;
+      top: 10px; right: 10px;
+      background: rgba(255,255,255,0.95);
+      border-radius: 8px;
+      padding: 7px 14px;
+      font-size: 1em;
       z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    }
+    #elevationBox {
+      text-align: center;
+      margin: 12px 0 0 0;
+      font-size: 1em;
     }
   </style>
-
-  <!-- Leaflet core CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <!-- Elevation plugin CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.elevation/dist/Leaflet.Elevation-0.0.2.css" />
 </head>
 <body>
-  <div id="info">거리:0.00 km / 고도:0 m</div>
   <div id="map"></div>
-  <div id="elevation"></div>
+  <div id="elevationBox">
+    <canvas id="elevation"></canvas>
+  </div>
+  <div id="infoBox">마우스를 코스 위에 올려보세요.</div>
 
-  <!-- 1) Leaflet core JS -->
+  <!-- External libraries -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <!-- 2) GPX loader -->
-  <script src="https://unpkg.com/leaflet-gpx/dist/leaflet-gpx.min.js"></script>
-  <!-- 3) D3 v3 (for elevation plugin) -->
-  <script src="https://d3js.org/d3.v3.min.js"></script>
-  <!-- 4) Elevation plugin JS -->
-  <script src="https://unpkg.com/leaflet.elevation/dist/Leaflet.Elevation-0.0.2.min.js"></script>
+  <script src="https://unpkg.com/chart.js@4.4.1/dist/chart.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/togpx@0.6.2/togpx.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet-gpx@1.7.0/gpx.min.js"></script>
+  <!-- (leaflet-gpx가 GPX 파싱 및 Polyline 표시) -->
 
   <script>
-    // 1) 지도 초기화
-    const map = L.map('map', { zoomControl: false }).setView([37.64, 127.11], 12);
+  // --- GPX 파일 경로 ---
+  const gpxUrl = './ultraseoul2025_50k_gm.gpx';
 
-    // 2) 산악 지형 강조 타일 레이어
-    L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenTopoMap contributors',
-      maxZoom: 17
-    }).addTo(map);
+  // --- 지도 초기화 ---
+  const map = L.map('map').setView([37.6413, 127.1116], 13);
+  L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+    attribution: '© OpenStreetMap & contributors'
+  }).addTo(map);
 
-    // 3) 확대·축소 버튼
-    L.control.zoom({ position: 'topright' }).addTo(map);
+  // --- GPX 로딩 ---
+  const gpxLayer = new L.GPX(gpxUrl, {
+    async: true,
+    marker_options: {
+      startIconUrl: 'https://unpkg.com/leaflet-gpx@1.7.0/pin-icon-start.png',
+      endIconUrl: 'https://unpkg.com/leaflet-gpx@1.7.0/pin-icon-end.png',
+      shadowUrl: 'https://unpkg.com/leaflet-gpx@1.7.0/pin-shadow.png'
+    },
+    polyline_options: {
+      color: '#FF3D00',
+      weight: 5,
+      opacity: 0.85,
+      lineCap: 'round'
+    }
+  }).on('loaded', function(e) {
+    map.fitBounds(e.target.getBounds());
+    // 고도 데이터 준비
+    const points = e.target.get_elevation_data();
+    drawElevationChart(points);
+    addPolylineHover(points);
+  }).addTo(map);
 
-    // 4) 고도 프로필 컨트롤
-    const elev = L.control.elevation({
-      position: 'bottomleft',
-      theme: 'steelblue-theme',
-      width: window.innerWidth,
-      height: 180,
-      margins: { top: 10, right: 20, bottom: 30, left: 50 },
-      useHeightIndicator: true,
-      interpolation: 'linear',
-      hoverNumber: {
-        decimalsX: 2, // 거리 소수점 자리
-        decimalsY: 0, // 고도 소수점 자리
-        formatter: (x,y) => ({ x: x, y: y })
+  // --- 고도 데이터 시각화 (Chart.js) ---
+  let chart, elevations = [], distances = [], latlngs = [];
+  function drawElevationChart(points) {
+    elevations = points.map(p => p.ele);
+    distances = [0];
+    latlngs = points.map(p => [p.lat, p.lon]);
+    for(let i=1;i<points.length;i++) {
+      const prev = points[i-1], cur = points[i];
+      const d = getDistance(prev.lat, prev.lon, cur.lat, cur.lon);
+      distances[i] = distances[i-1] + d;
+    }
+    // km 단위로 변환
+    const km = distances.map(m => (m/1000).toFixed(2));
+    const ctx = document.getElementById('elevation').getContext('2d');
+    if(chart) chart.destroy();
+    chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: km,
+        datasets: [{
+          label: '고도(m)',
+          data: elevations,
+          borderColor: '#1976d2',
+          backgroundColor: 'rgba(25,118,210,0.18)',
+          pointRadius: 0,
+          fill: true,
+          tension: 0.1
+        }]
       },
-      collapsed: false
-    }).addTo(map);
-
-    // 5) GPX 로드
-    new L.GPX(
-      'https://raw.githubusercontent.com/Ditpy/ultraseoul2025/main/ultraseoul2025_50k_gm.gpx',
-      { async: true, marker_options: { startIconUrl:null, endIconUrl:null, shadowUrl:null } }
-    )
-    .on('loaded', e => {
-      map.fitBounds(e.target.getBounds());
-    })
-    .on('addline', e => {
-      // e.line 은 L.Polyline (거리에 따라 z, 고도 포함)
-      elev.addData(e.line);
-    })
-    .addTo(map);
-
-    // 6) 호버 시 거리/고도 표시
-    const info = document.getElementById('info');
-    elev.on('mousemove', function(evt) {
-      if (evt.x && evt.y) {
-        info.textContent = `거리: ${evt.x.toFixed(2)} km  /  고도: ${evt.y.toFixed(0)} m`;
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false }},
+        scales: {
+          x: { display: true, title: { display: true, text: '거리 (km)'} },
+          y: { display: true, title: { display: true, text: '고도 (m)'} }
+        },
+        interaction: {
+          mode: 'index',
+          intersect: false
+        },
+        onHover: (event, chartElements) => {
+          if(chartElements.length) {
+            const i = chartElements[0].index;
+            highlightOnMap(i);
+            showInfo(i);
+          }
+        },
+        onLeave: () => {
+          removeHighlight();
+          hideInfo();
+        }
       }
     });
-    elev.on('mouseout', () => {
-      info.textContent = '거리:0.00 km / 고도:0 m';
+  }
+
+  // --- 지도 Polyline에 마우스 호버시 거리/고도 표시 ---
+  let highlightMarker;
+  function addPolylineHover(points) {
+    const poly = gpxLayer.getLayers().find(l=>l instanceof L.Polyline);
+    poly.on('mousemove', function(e) {
+      // polyline에서 가장 가까운 점 찾기
+      const idx = getClosestIndex(e.latlng, latlngs);
+      highlightOnMap(idx);
+      showInfo(idx);
+      chart.setActiveElements([{datasetIndex:0, index:idx}]);
+      chart.update('none');
     });
+    poly.on('mouseout', function() {
+      removeHighlight();
+      hideInfo();
+      chart.setActiveElements([]);
+      chart.update('none');
+    });
+  }
+
+  // --- 지도상 하이라이트 표시 ---
+  function highlightOnMap(idx) {
+    if(!latlngs[idx]) return;
+    if(highlightMarker) map.removeLayer(highlightMarker);
+    highlightMarker = L.circleMarker(latlngs[idx], {
+      radius: 8,
+      color: '#0d47a1',
+      fillColor: '#fff',
+      fillOpacity: 1,
+      weight: 2
+    }).addTo(map);
+  }
+  function removeHighlight() {
+    if(highlightMarker) map.removeLayer(highlightMarker);
+  }
+
+  // --- 지도/차트 정보박스 ---
+  function showInfo(idx) {
+    const dist = (distances[idx]/1000).toFixed(2);
+    const ele = elevations[idx].toFixed(1);
+    const lat = latlngs[idx][0].toFixed(6);
+    const lon = latlngs[idx][1].toFixed(6);
+    document.getElementById('infoBox').innerHTML =
+      `<b>거리:</b> ${dist} km<br/><b>고도:</b> ${ele} m<br/><b>좌표:</b> ${lat}, ${lon}`;
+  }
+  function hideInfo() {
+    document.getElementById('infoBox').innerHTML = '마우스를 코스 위에 올려보세요.';
+  }
+
+  // --- 유틸 ---
+  function getClosestIndex(latlng, arr) {
+    let minD = 1e9, idx = 0;
+    arr.forEach((p,i)=>{
+      const d = map.distance(latlng, p);
+      if(d < minD) { minD = d; idx = i; }
+    });
+    return idx;
+  }
+  // 적도 근사 거리(m)
+  function getDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371000;
+    const toRad = x => x * Math.PI / 180;
+    const dLat = toRad(lat2-lat1), dLon = toRad(lon2-lon1);
+    const a = Math.sin(dLat/2)**2 +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2)**2;
+    return 2 * R * Math.asin(Math.sqrt(a));
+  }
   </script>
 </body>
 </html>
