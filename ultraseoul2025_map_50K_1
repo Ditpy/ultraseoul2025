@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>50K 코스 지도 & 고도 프로필</title>
+  <!-- leaflet core -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet/dist/leaflet.css"
+  />
+  <!-- elevation plugin 기본 CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet.elevation/dist/Leaflet.Elevation-0.0.2.css"
+  />
+  <style>
+    html, body { margin:0; padding:0; height:100%; }
+    #map       { position:absolute; top:0; left:0; width:100%; height:60%; }
+    #elevation { position:absolute; bottom:0; left:0; width:100%; height:40%; }
+
+    /* 커스텀: 트랙 색상 */
+    .leaflet-gpx .leaflet-polyline { stroke: #b61523 !important; stroke-width:4 !important; }
+
+    /* 고도 프로필 그래프 색상 덮어쓰기 */
+    .elevation .profile path.line, 
+    .elevation .profile path.area {
+      stroke: #389b5d !important;
+      fill:   #a0dca2 !important;
+    }
+    /* 마우스 오버 원점 표시 */
+    .elevation .mm { fill: #b61523 !important; stroke: #fff !important; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <div id="elevation"></div>
+
+  <!-- 1) leaflet -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <!-- 2) GPX loader -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/2.2.0/gpx.min.js"></script>
+  <!-- 3) D3 v3 완전판 -->
+  <script src="https://d3js.org/d3.v3.min.js"></script>
+  <!-- 4) elevation plugin -->
+  <script src="https://unpkg.com/leaflet.elevation/dist/Leaflet.Elevation-0.0.2.min.js"></script>
+
+  <script>
+    // 1) 지도 초기화
+    const map = L.map('map', {
+      zoomControl: false,
+      attributionControl: false
+    }).setView([37.641, 127.106], 11);
+
+    // 2) 밝고 부드러운 배경 타일 (CartoDB Positron)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      subdomains: 'abcd',
+      maxZoom: 19
+    }).addTo(map);
+
+    // 3) 고도 프로필 컨트롤
+    const elev = L.control.elevation({
+      position: 'bottomright',
+      theme: 'steelblue-theme',    // 기본 CSS 로딩
+      width: window.innerWidth,
+      height: 200,
+      followMarker: true,          // 마우스 커서 따라다니는 표시
+      showTooltip: true,           // 툴팁 활성화
+      tooltipOffset: [10, -25],    // 툴팁 위치 조정
+      showDistance: true           // 누적 거리 표시
+    }).addTo(map);
+
+    // 4) GPX 불러와서 지도+고도 프로필에 추가
+    new L.GPX(
+      'https://raw.githubusercontent.com/Ditpy/ultraseoul2025/refs/heads/main/ultraseoul2025_50k_gm.gpx',
+      {
+        async: true,
+        polyline_options: {
+          color: '#b61523', weight: 4, opacity: 0.8
+        },
+        marker_options: {
+          startIconUrl:    null,
+          endIconUrl:      null,
+          shadowUrl:       null
+        }
+      }
+    )
+    .on('loaded', e => {
+      // 전체 트랙 bounds 에 맞춰 줌
+      map.fitBounds(e.target.getBounds(), { padding: [20,20] });
+    })
+    .on('addline', e => {
+      // elevation plugin 에도 궤적 레이어 전달
+      elev.addData(e.line);
+    })
+    .addTo(map);
+
+    // 5) 윈도우 리사이즈 시 graph width 자동 조정
+    window.addEventListener('resize', () => {
+      const w = window.innerWidth;
+      elev._container.style.width = w + 'px';
+      elev._profileDiv.style.width = w + 'px';
+      elev._profile._redraw();
+    });
+  </script>
+</body>
+</html>
