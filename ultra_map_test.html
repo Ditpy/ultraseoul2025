@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>GPX Map & Elevation (All-in-One)</title>
+  <style>
+    html, body { margin:0; padding:0; height:100%; }
+    #map       { width:100%; height:60vh; }    /* 화면 위 60% 에 지도 */
+    #elevation { width:100%; height:40vh; }    /* 화면 아래 40% 에 차트 */
+  </style>
+
+  <!-- 1) Leaflet core CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet/dist/leaflet.css"
+  />
+  <!-- 2) Elevation plugin CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet.elevation/dist/Leaflet.Elevation-0.0.2.css"
+  />
+</head>
+<body>
+
+  <div id="map"></div>
+  <div id="elevation"></div>
+
+  <!-- 3) Leaflet core JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <!-- 4) GPX loader (cdnjs 안정판) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/2.2.0/gpx.min.js"></script>
+  <!-- 5) D3 v3 완전판 (d3.svg.axis 포함) -->
+  <script src="https://d3js.org/d3.v3.min.js"></script>
+  <!-- 6) Elevation plugin JS -->
+  <script src="https://unpkg.com/leaflet.elevation/dist/Leaflet.Elevation-0.0.2.min.js"></script>
+
+  <script>
+    // 7) 지도 초기화
+    const map = L.map("map").setView([37.5665, 126.9780], 12);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "© OpenStreetMap contributors"
+    }).addTo(map);
+
+    // 8) 고도 프로필 컨트롤 생성
+    const elev = L.control.elevation({
+      position: "bottomright",
+      theme: "steelblue-theme",
+      width: window.innerWidth,
+      height: 200,
+      collapsed: false    // 차트를 접지 않고 펼친 상태로 시작
+    }).addTo(map);
+
+    // 9) GPX 트랙 로드
+    new L.GPX(
+      "https://raw.githubusercontent.com/Ditpy/ultraseoul2025/main/ultraseoul2025_50k.gpx",
+      { async: true, marker_options: { startIcon: false, endIcon: false } }
+    )
+      .on("loaded", e => {
+        // 9-1) 지도 bounds 맞추기
+        map.fitBounds(e.target.getBounds());
+
+        // 9-2) GPX 레이어 내부의 모든 폴리라인을 elevation에 추가
+        e.target.getLayers().forEach(layer => {
+          if (layer instanceof L.Polyline) {
+            elev.addData(layer);
+          }
+        });
+      })
+      .on("addline", e => {
+        // 혹시 addline 이벤트가 따로 필요하면 여기서도 처리
+      })
+      .addTo(map);
+  </script>
+
+</body>
+</html>
