@@ -220,10 +220,10 @@
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="https://unpkg.com/chart.js@4.4.1/dist/chart.umd.js"></script>
   <script>
-  // GPX는 반드시 ./ultraseoul2025_50k_gm.gpx로!
+  // GPX 파일 경로: 실제 파일과 같은 폴더에 둘 것!
   const gpxUrl = './ultraseoul2025_50k_gm.gpx';
 
-  // 산 이름, 위도, 경도 예시 (적절히 수정하세요!)
+  // 산 이름, 위도, 경도 예시 (필요시 좌표 수정)
   const mountains = [
     { name: "함백산", lat: 37.1463, lon: 128.9774 },
     { name: "태백산 천제단", lat: 37.0882, lon: 128.9360 },
@@ -249,6 +249,7 @@
   let chart, elevations=[], distances=[], latlngs=[];
   let highlightMarker, kmMarkers=[], polyline, startLabel, endLabel;
   let totalAsc=0, totalDesc=0;
+  let mountainLabelEvtRegistered = false;
   const cpList = [
     { km:10, label:'CP1' },
     { km:19, label:'CP2' },
@@ -259,54 +260,65 @@
 
   fetch(gpxUrl)
     .then(res=>{
-      if (!res.ok) throw new Error("GPX 파일을 불러올 수 없습니다.");
+      if (!res.ok) throw new Error();
       return res.text();
     })
     .then(xmlText=>{
-      document.getElementById('gpxErrorMsg').style.display = 'none';
-      const parser=new DOMParser();
-      const xml=parser.parseFromString(xmlText,"application/xml");
-      const trkpts=xml.querySelectorAll('trkpt');
-      latlngs=[]; elevations=[]; distances=[0];
-      trkpts.forEach((pt,i)=>{
-        const lat=+pt.getAttribute('lat'), lon=+pt.getAttribute('lon');
-        const ele=+pt.querySelector('ele').textContent;
-        latlngs.push([lat,lon]); elevations.push(ele);
-        if(i>0) distances[i]=distances[i-1]+getDistance(latlngs[i-1][0],latlngs[i-1][1],lat,lon);
-      });
-      totalAsc=0; totalDesc=0;
-      for(let i=1;i<elevations.length;i++){
-        const diff=elevations[i]-elevations[i-1];
-        if(diff>0) totalAsc+=diff; else totalDesc-=diff;
+      try {
+        document.getElementById('gpxErrorMsg').style.display = 'none';
+        const parser=new DOMParser();
+        const xml=parser.parseFromString(xmlText,"application/xml");
+        const trkpts=xml.querySelectorAll('trkpt');
+        if (trkpts.length === 0) throw new Error();
+        latlngs=[]; elevations=[]; distances=[0];
+        trkpts.forEach((pt,i)=>{
+          const lat=+pt.getAttribute('lat'), lon=+pt.getAttribute('lon');
+          const ele=+pt.querySelector('ele').textContent;
+          latlngs.push([lat,lon]); elevations.push(ele);
+          if(i>0) distances[i]=distances[i-1]+getDistance(latlngs[i-1][0],latlngs[i-1][1],lat,lon);
+        });
+        totalAsc=0; totalDesc=0;
+        for(let i=1;i<elevations.length;i++){
+          const diff=elevations[i]-elevations[i-1];
+          if(diff>0) totalAsc+=diff; else totalDesc-=diff;
+        }
+        polyline=L.polyline(latlngs,{
+          color:'#16649A',weight:4,opacity:0.99,lineCap:'round'
+        }).addTo(map);
+        map.fitBounds(polyline.getBounds(),{padding:[17,17]});
+        drawKmMarkers(); drawStartEnd();
+        drawMountainLabels();
+
+        polyline.on('mousemove',e=>{
+          const idx=getClosestIndex(e.latlng,latlngs);
+          highlightOnMap(idx);
+          showHoverInfo('elev',idx,e,true);
+        });
+        polyline.on('mouseout',()=>{removeHighlight();hideHoverInfo('elev');});
+
+        drawElevationChart();
+        drawElevInfoTable();
+        drawCpMarks();
+        window.addEventListener('resize',drawCpMarks);
+      } catch(e) {
+        showGpxError();
       }
-      polyline=L.polyline(latlngs,{
-        color:'#16649A',weight:4,opacity:0.99,lineCap:'round'
-      }).addTo(map);
-      map.fitBounds(polyline.getBounds(),{padding:[17,17]});
-      drawKmMarkers(); drawStartEnd();
-      drawMountainLabels();
-
-      polyline.on('mousemove',e=>{
-        const idx=getClosestIndex(e.latlng,latlngs);
-        highlightOnMap(idx);
-        showHoverInfo('elev',idx,e,true);
-      });
-      polyline.on('mouseout',()=>{removeHighlight();hideHoverInfo('elev');});
-
-      drawElevationChart();
-      drawElevInfoTable();
-      drawCpMarks();
-      window.addEventListener('resize',drawCpMarks);
     })
-    .catch(err=>{
-      document.getElementById('gpxErrorMsg').style.display = 'block';
-      document.getElementById('gpxErrorMsg').innerText =
-        "코스 GPX 파일을 불러올 수 없습니다. (ultraseoul2025_50k_gm.gpx 파일이 이 페이지와 같은 폴더에 없거나 경로가 잘못되었습니다)";
-    });
+    .catch(showGpxError);
+
+  function showGpxError() {
+    document.getElementById('gpxErrorMsg').style.display = 'block';
+    document.getElementById('gpxErrorMsg').innerText =
+      "코스 GPX 파일을 불러올 수 없습니다.\n" +
+      "1) ultraseoul2025_50k_gm.gpx 파일이 이 페이지와 같은 폴더에 있는지,\n" +
+      "2) 파일명이 정확한지,\n" +
+      "3) 경로(대소문자 포함)를 다시 확인해 주세요.";
+  }
 
   function drawMountainLabels() {
     const wrap = document.getElementById('mountainLabels');
     wrap.innerHTML = '';
+    if (!Array.isArray(mountains) || mountains.length === 0) return;
     mountains.forEach(m => {
       const p = map.latLngToContainerPoint([m.lat, m.lon]);
       const div = document.createElement('div');
@@ -316,14 +328,20 @@
       div.textContent = m.name;
       wrap.appendChild(div);
     });
-    map.on('move zoom', function(){
-      mountains.forEach((m,i) => {
-        const p = map.latLngToContainerPoint([m.lat, m.lon]);
-        const div = wrap.children[i];
-        div.style.left = (p.x-28) + 'px';
-        div.style.top = (p.y-18) + 'px';
+    // 이벤트 중복 등록 방지
+    if (!mountainLabelEvtRegistered) {
+      map.on('move zoom', function(){
+        mountains.forEach((m,i) => {
+          const p = map.latLngToContainerPoint([m.lat, m.lon]);
+          const div = wrap.children[i];
+          if(div) {
+            div.style.left = (p.x-28) + 'px';
+            div.style.top = (p.y-18) + 'px';
+          }
+        });
       });
-    });
+      mountainLabelEvtRegistered = true;
+    }
   }
 
   function drawKmMarkers(){
@@ -491,9 +509,11 @@
   function drawCpMarks() {
     const wrap = document.getElementById('cpMarks');
     wrap.innerHTML = '';
+    if (!distances.length || !elevations.length) return;
     const totalDist = distances[distances.length-1]/1000;
     const minEle = Math.min(...elevations), maxEle = Math.max(...elevations);
-    const h = wrap.offsetHeight;
+    let h = wrap.offsetHeight;
+    if (!h || h < 20) h = 70; // 최소값 fallback
     cpList.forEach(({km,label})=>{
       const idx = distances.findIndex(d=>d/1000>=km);
       if(idx===-1) return;
@@ -545,7 +565,6 @@
     wrap.appendChild(labelWrap);
   }
 
-  // 고도/거리 info : 마우스 따라가도록
   function showHoverInfo(type, idx, evt, followMouse) {
     const dist = (distances[idx]/1000).toFixed(2);
     const ele = elevations[idx].toFixed(0);
