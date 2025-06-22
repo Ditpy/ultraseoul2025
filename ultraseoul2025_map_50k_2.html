@@ -13,6 +13,7 @@
       --color-point-hover: #c90012;
       --color-point-disabled: #888b92;
       --color-white: #fff;
+      --color-elev-line: #16649A;
       --btn-radius: 2.2em;
       --btn-font: Pretendard, 'Segoe UI', Arial, sans-serif;
       --btn-shadow: 0 6px 19px rgba(231,0,19,0.14);
@@ -329,37 +330,39 @@
     const kmArr=distances.map(m=>(m/1000).toFixed(2));
     const ctx=document.getElementById('elevation').getContext('2d');
     if(chart) chart && chart.destroy();
-    // 상→하 레드 그라데이션
+    // 상→하 블루 그라데이션, 자연스럽게 0까지 fade
     const grad=ctx.createLinearGradient(0,0,0,ctx.canvas.height);
-    grad.addColorStop(0,"rgba(231,0,19,0.37)");
-    grad.addColorStop(0.75,"rgba(231,0,19,0.09)");
-    grad.addColorStop(1,"rgba(255,255,255,0.01)");
+    grad.addColorStop(0,"rgba(22,100,154,0.34)");
+    grad.addColorStop(0.75,"rgba(22,100,154,0.09)");
+    grad.addColorStop(1,"rgba(22,100,154,0.00)");
     chart=new Chart(ctx,{
       type:'line',
       data:{
         labels:kmArr,
         datasets:[{
           label:'고도(m)',data:elevations,
-          borderColor:'#e70013',
+          borderColor:'#16649A',
           backgroundColor:grad,
+          borderWidth:3,
           pointRadius:0,
           fill:true,
-          tension:0.18
+          tension:0.16
         }]
       },
       options:{
         responsive:true,maintainAspectRatio:false,
         plugins:{legend:{display:false},tooltip:{enabled:false}},
-        elements:{line:{borderWidth:2.7}},
+        elements:{line:{borderWidth:3}},
         scales:{
           x:{
             display:true,
-            title:{display:true,text:'거리 (km)',color:'#333',font:{size:18,weight:'bold',family:'Pretendard'}},
+            title:{display:true,text:'거리 (km)',color:'#e70013',font:{size:18,weight:'bold',family:'Pretendard'}},
             ticks:{
-              color:'#222',font:{size:15,weight:'bold',family:'Pretendard'},
-              maxTicksLimit:11,
+              color:'#e70013',
+              font:{size:15,weight:'bold',family:'Pretendard'},
               callback:function(value,index){
-                if(index===0||kmArr[index]%10===0) return kmArr[index];
+                const v = parseFloat(kmArr[index]);
+                if (v % 10 === 0) return v.toFixed(0);
                 return '';
               }
             },
@@ -367,9 +370,10 @@
           },
           y:{
             display:true,
-            title:{display:true,text:'고도 (m)',color:'#333',font:{size:18,weight:'bold',family:'Pretendard'}},
+            title:{display:true,text:'고도 (m)',color:'#16649A',font:{size:18,weight:'bold',family:'Pretendard'}},
             ticks:{
-              color:'#e70013',font:{size:15,weight:'bold',family:'Pretendard'},
+              color:'#16649A',
+              font:{size:15,weight:'bold',family:'Pretendard'},
               callback:function(value){if(value%200===0)return value;return '';}
             },
             grid:{color:'#f2e6e6'}
@@ -459,8 +463,8 @@
       } else { left = 35; top = 15; }
     }
     box.innerHTML =
-      `<span style="color:#e70013;font-weight:700">${dist} km</span> /
-       <span style="color:#1a1a1a;">${ele} m</span>`;
+      `<span style="color:#16649A;font-weight:700">${dist} km</span> /
+       <span style="color:#16649A;">${ele} m</span>`;
     box.style.left = left + 'px'; box.style.top = top + 'px';
     box.style.display = 'block';
   }
