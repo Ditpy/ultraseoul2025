@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>GPX Map & Elevation (Patched)</title>
+  <title>GPX Map & Elevation (High-Res)</title>
   <style>
     html, body { margin:0; padding:0; height:100%; }
     #map       { width:100%; height:60%; }
@@ -15,81 +15,53 @@
   <div id="map"></div>
   <div id="elevation"></div>
 
-  <!-- 1) Leaflet core JS -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <!-- 2) GPX loader (원본 v2.2.0) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/2.2.0/gpx.min.js"></script>
-  <!-- 3) D3 v3 (d3.svg.axis 포함) -->
   <script src="https://d3js.org/d3.v3.min.js"></script>
-  <!-- 4) Elevation plugin JS -->
   <script src="https://unpkg.com/leaflet.elevation/dist/Leaflet.Elevation-0.0.2.min.js"></script>
 
   <script>
-    //
-    // ◆ Monkey-patch: L.GPX 내부 파싱 함수 교체
-    //
-    // 원본 GPX loader 가 lat/lng 배열만 만들던 부분을 alt(elevation) 포함으로 바꿉니다.
-    //
+    // ───────────────
+    // 1) 샘플 간격 patch
+    // ───────────────
     (function() {
-      // segmentNode 를 받아 L.LatLng 배열(alt 포함) 리턴
-      function parseSegmentWithEle(segmentNode) {
-        const pts = segmentNode.getElementsByTagName('trkpt'),
-              seg = [];
-        for (let i = 0; i < pts.length; i++) {
-          const node = pts[i],
-                lat = parseFloat(node.getAttribute('lat')),
-                lon = parseFloat(node.getAttribute('lon')),
-                eleTag = node.getElementsByTagName('ele')[0],
-                ele = eleTag ? parseFloat(eleTag.textContent) : undefined;
-          // L.LatLng(lat, lon, ele) 로 alt 정보 포함
-          seg.push(L.latLng(lat, lon, ele));
-        }
-        return seg;
-      }
-
-      // L.GPX.prototype._parseGpx 또는 _parseTrackSegment 가 정의된 지점을 찾아 패치
-      if (L.GPX && L.GPX.prototype._parseTrackSegment) {
-        // v2.2.0 의 경우
-        L.GPX.prototype._parseTrackSegment = parseSegmentWithEle;
-      } else if (L.GPX && L.GPX.prototype._parseSegment) {
-        // 만약 다른 메서드명이라면
-        L.GPX.prototype._parseSegment = parseSegmentWithEle;
-      } else {
-        console.warn('leaflet-gpx segment parser not patched: method not found');
-      }
+      // 원본 _sampleSegment 메서드를 덮어써서, interval 을 100m 로 변경
+      const proto = L.Control.Elevation.prototype;
+      const orig = proto._sampleSegment;
+      proto._sampleSegment = function(latlngs) {
+        // this.options.interval: 기본 1000m → 100m 로 변경
+        this.options.interval = 100;  
+        return orig.call(this, latlngs);
+      };
     })();
 
-    //
-    // ◆ Map + Elevation 초기화
-    //
-    (function() {
-      const map = L.map("map").setView([0, 0], 2);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "© OpenStreetMap contributors"
-      }).addTo(map);
+    // ───────────────
+    // 2) 지도 & Elevation 초기화
+    // ───────────────
+    const map = L.map("map").setView([37.5665,126.9780],12);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "© OpenStreetMap contributors"
+    }).addTo(map);
 
-      const elev = L.control.elevation({
-        position: "bottomright",
-        theme: "steelblue-theme",
-        width: window.innerWidth,
-        height: 200,
-        collapsed: false
-      }).addTo(map);
+    const elev = L.control.elevation({
+      position: "bottomright",
+      theme: "steelblue-theme",
+      collapsed: false,
+      width: window.innerWidth,
+      height: 200
+    }).addTo(map);
 
-      new L.GPX(
-        "https://raw.githubusercontent.com/Ditpy/ultraseoul2025/main/ultraseoul2025_50k.gpx",
-        { async: true }
-      )
-        .on("loaded", e => {
-          map.fitBounds(e.target.getBounds());
-          e.target.getLayers().forEach(layer => {
-            if (layer instanceof L.Polyline) {
-              elev.addData(layer);
-            }
-          });
-        })
-        .addTo(map);
-    })();
+    new L.GPX(
+      "https://raw.githubusercontent.com/Ditpy/ultraseoul2025/main/ultraseoul2025_50k.gpx",
+      { async: true }
+    )
+    .on("loaded", e => {
+      map.fitBounds(e.target.getBounds());
+      e.target.getLayers().forEach(layer => {
+        if (layer instanceof L.Polyline) elev.addData(layer);
+      });
+    })
+    .addTo(map);
   </script>
 </body>
 </html>
