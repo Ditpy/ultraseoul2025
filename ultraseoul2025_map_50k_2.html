@@ -15,7 +15,6 @@
     #map {
       width: 1080px; height: 350px; margin:0 auto;
       filter: saturate(0.3) hue-rotate(-120deg) brightness(1.15) contrast(1.07);
-      /* 푸른색감↑, 붉은색감↓, 채도 30% */
       border-radius: 0; box-shadow: none;
       position: relative;
     }
@@ -52,11 +51,11 @@
       display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
     }
     #elevation {
-      width: 1040px; height: 260px; background: #fff; border-radius: 0; display:block; margin:0 auto;
+      width: 1040px; height: 300px; background: #fff; border-radius: 0; display:block; margin:0 auto;
     }
     /* CP marker on elevation */
     .cp-elev-marker {
-      position: absolute; width: 0; height: 260px; left:0; top:0; pointer-events: none;
+      position: absolute; width: 0; height: 300px; left:0; top:0; pointer-events: none;
       z-index: 3;
     }
     .cp-elev-circle {
@@ -67,7 +66,7 @@
       position: absolute; left: 0; width: 2px; background: #ce1126; z-index: 3;
     }
     .cp-elev-label {
-      position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%);
+      position: absolute; left: 50%; top: -24px; transform: translateX(-50%);
       background: #ce1126; color: #fff; font-weight: 700; font-size: 1em; border-radius: 0.9em;
       padding: 0.15em 0.9em; white-space: nowrap; z-index: 5;
       box-shadow: none;
@@ -141,7 +140,7 @@
     </div>
     <div id="infoBarLine"></div>
     <div id="elevationBox" style="position:relative;">
-      <canvas id="elevation"></canvas>
+      <canvas id="elevation" width="1040" height="300"></canvas>
       <div id="elevTooltip" class="elev-tooltip" style="display:none"></div>
       <!-- CP, 10k 마커는 JS로 동적으로 삽입 -->
     </div>
@@ -153,8 +152,14 @@
   <script>
   // =================== GPX, 지도, 고도표 ===================
   const gpxUrl = './ultraseoul2025_50k_gm.gpx'; // GPX 파일명을 올바르게!
-  let map, chart, elevations=[], distances=[], latlngs=[], cps=[], kmMarkers=[];
+  let map, chart, elevations=[], distances=[], latlngs=[], kmMarkers=[];
   let totalAsc=0, totalDesc=0, maxEle=0;
+
+  // 예시 CP 목록 (적절히 수정)
+  const CPs = [
+    {name:'CP1', km:10}, {name:'CP2', km:19}, {name:'CP3', km:30},
+    {name:'CP4', km:36}, {name:'CP5', km:44}
+  ];
 
   function updateInfoBar() {
     document.getElementById('infoDistance').textContent = distances.length ? (distances[distances.length-1]/1000).toFixed(2)+'km' : '--';
@@ -203,20 +208,18 @@
 
   // 지도, 코스, 라벨, Start/Finish, 5k 마커, 마우스오버
   function addCourseLine() {
-    // 빨간 얇은 라인
+    // 빨간 얇은 라인 (페이지1과 동일 컬러/스타일)
     const polyline = L.polyline(latlngs, {
-      color:'#ce1126', weight:3.0, opacity:0.96, lineCap:'round'
+      color:'#ce1126', weight:2.4, opacity:0.97, lineCap:'round'
     }).addTo(map);
 
-    // 5k 마커
-    let totalDist = distances[distances.length-1];
+    // 5k 마커 (페이지1 스타일)
     kmMarkers = [];
     for(let i=0;i<distances.length;i++){
       let km = Math.round(distances[i]/1000);
-      if (km % 5 === 0 && (!kmMarkers.includes(km))) {
+      if (km % 5 === 0 && !kmMarkers.includes(km)) {
         kmMarkers.push(km);
-        const labelHtml = `<div class="km-label" style="left:50%;top:50%;">${km}km</div>`;
-        // 지도상에 라벨을 좌표에 맞게 표시
+        const labelHtml = `<div class="km-label">${km}km</div>`;
         L.marker(latlngs[i], {
           icon: L.divIcon({
             className:'', html: labelHtml, iconAnchor:[0,0], iconSize:[46,18]
@@ -225,7 +228,7 @@
       }
     }
 
-    // Start/Finish 라벨(말풍선)
+    // Start/Finish 말풍선
     const startIdx = 0, finishIdx = latlngs.length-1;
     [{idx:startIdx, txt:'START'}, {idx:finishIdx, txt:'FINISH'}].forEach(obj=>{
       const pt = latlngs[obj.idx];
@@ -235,7 +238,7 @@
           <div class="balloon-label">${obj.txt}
             <div class="balloon-arrow"></div>
           </div>`,
-          iconAnchor: [54,42], // 말풍선 위치 조정
+          iconAnchor: [54,42],
           popupAnchor: [0, -35]
         })
       }).addTo(map);
@@ -243,7 +246,6 @@
 
     // 지도 라인 마우스오버 고도/거리 정보
     polyline.on('mousemove', function(e){
-      // polyline에서 가장 가까운 index 찾기
       let minI = 0, minDist = Infinity;
       for(let i=0;i<latlngs.length;i++){
         const d = Math.abs(e.latlng.lat-latlngs[i][0]) + Math.abs(e.latlng.lng-latlngs[i][1]);
@@ -261,24 +263,42 @@
     const kmArr = distances.map(m=>(m/1000).toFixed(2));
     const ctx = document.getElementById('elevation').getContext('2d');
     if(chart) chart.destroy();
+
+    // 블루 그라데이션 (위→아래 투명)
+    const grad = ctx.createLinearGradient(0,0,0,300);
+    grad.addColorStop(0, "rgba(22,100,154,0.23)");
+    grad.addColorStop(1, "rgba(22,100,154,0)");
+
+    // 고도축 단계(3개만)
+    const maxEle = Math.max(...elevations), minEle = Math.min(...elevations);
+    const yTicks = [
+      Math.round(minEle/100)*100,
+      Math.round((minEle+maxEle)/2/100)*100,
+      Math.round(maxEle/100)*100
+    ];
+
+    // 10k마다 x축 눈금
+    const xLabels = distances.map(m=>(m/1000).toFixed(1));
+
     chart = new Chart(ctx,{
       type:'line',
       data:{
-        labels: kmArr,
+        labels: xLabels,
         datasets:[{
           label:'고도(m)',
           data: elevations,
-          borderColor:{
-            type:'linear',
-            x0:0, y0:0, x1:1040, y1:0,
-            colorStops: {0:'#2798ff', 0.3:'#5defff', 0.6:'#0053b3', 1:'#18388c'}
-          },
-          backgroundColor:'rgba(33,120,255,0.07)',
-          borderWidth:2.2, pointRadius:0, fill:true, tension:0.16
+          borderColor: '#16649A',
+          backgroundColor: grad,
+          borderWidth: 2,
+          pointRadius: 0,
+          fill: true,
+          tension: 0.13,
+          order: 1,
         }]
       },
       options:{
-        responsive:false, maintainAspectRatio:false,
+        responsive: false,
+        maintainAspectRatio: false,
         plugins:{
           legend:{display:false},
           tooltip:{enabled:false}
@@ -286,23 +306,30 @@
         scales:{
           x: {
             display: true,
-            title: {display:true, text:'거리(km)'},
+            grid: {display: false, drawBorder: false},
             ticks: {
+              color: '#16649A',
               callback: function(val, idx) {
-                // 10k 단위만 표시
-                return (parseFloat(this.getLabelForValue(val)) % 10 === 0) ? this.getLabelForValue(val) : '';
+                const km = parseFloat(this.getLabelForValue(val));
+                return (km % 10 === 0) ? km + 'k' : '';
               }
             }
           },
           y: {
             display: true,
-            title: {display:true, text:'고도(m)'},
+            position: 'left',
+            grid: {display: false, drawBorder: false},
             ticks: {
-              stepSize: 100
-            }
+              color: '#16649A',
+              callback: function(value) {
+                return yTicks.includes(value) ? value + 'm' : '';
+              }
+            },
+            min: yTicks[0],
+            max: yTicks[2]
           }
         },
-        animation:false,
+        animation: false,
         events: []
       }
     });
@@ -321,24 +348,22 @@
     // CP, 10k 마커 동적 생성
     const elevBox = document.getElementById('elevationBox');
     elevBox.querySelectorAll('.cp-elev-marker').forEach(e=>e.remove());
-    // 예시 CP 목록, 실제 좌표/거리 반영 필요
-    const CPs = [
-      {name:'CP1', km:10}, {name:'CP2', km:19}, {name:'CP3', km:30},
-      {name:'CP4', km:36}, {name:'CP5', km:44}
-    ];
+
+    // CP 세로선, 동그라미, 텍스트 (상단~그래프 라인까지)
     CPs.forEach(cp=>{
-      // idx 찾기
-      let idx = distances.findIndex(d=>Math.round(d/1000)===cp.km);
-      if(idx<0) idx=distances.length-1;
+      let idx = distances.findIndex(d=>d/1000 >= cp.km);
+      if(idx < 0) idx = distances.length-1;
       const left = (distances[idx]/distances[distances.length-1])*1040;
-      const elevY = 260 - ((elevations[idx]-Math.min(...elevations))/(Math.max(...elevations)-Math.min(...elevations)))*220;
+      const maxEle = Math.max(...elevations), minEle = Math.min(...elevations);
+      const elev = elevations[idx];
+      const y = ((maxEle-elev)/(maxEle-minEle))*(300-40)+20;
       const marker = document.createElement('div');
       marker.className = 'cp-elev-marker';
       marker.style.left = `${left}px`;
       marker.innerHTML = `
-        <div class="cp-elev-line" style="height:${260-elevY}px;top:${elevY}px;"></div>
-        <div class="cp-elev-circle" style="bottom:0;"></div>
-        <div class="cp-elev-label">${cp.name}<span style="font-weight:400;"> ${cp.km}km</span></div>
+        <div class="cp-elev-line" style="height:${y}px;top:0;"></div>
+        <div class="cp-elev-circle" style="bottom:${300-y-8}px;"></div>
+        <div class="cp-elev-label">${cp.name}<span style="font-weight:400;"> ${cp.km}k</span></div>
       `;
       marker.style.top = '0';
       marker.style.position = 'absolute';
