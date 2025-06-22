@@ -2,27 +2,58 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Ultraseoul2025 50k - Tracedetrail Simple Map Style (Grayscale)</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Ultraseoul2025 50k - Tracedetrail Custom Map Style</title>
+  <meta name="viewport" content="width=1300">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
-    body { margin:0; padding:0; }
-    #map { height: 60vh; }
-    #elevation { height: 30vh; }
-    #infoBox {
-      position: absolute;
-      top: 10px; right: 10px;
-      background: rgba(255,255,255,0.95);
-      border-radius: 8px;
-      padding: 7px 14px;
-      font-size: 1em;
-      z-index: 1000;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    body { margin:0; padding:0; background:#f8f8f8; }
+    #container {
+      width: 1300px;
+      margin: 24px auto 0;
+    }
+    #map {
+      width: 1300px;
+      height: 731px; /* 1300 * 9/16 */
+      filter: saturate(0.5) brightness(1.08) contrast(1.04); /* 채도 낮추고 살짝 밝게 */
+      border-radius: 12px;
+      box-shadow: 0 3px 16px rgba(0,0,0,0.07);
+      background: #ececec;
+      position: relative;
+      z-index: 1;
+      overflow: hidden;
     }
     #elevationBox {
-      text-align: center;
-      margin: 12px 0 0 0;
-      font-size: 1em;
+      width: 1300px;
+      height: 160px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+      margin-top: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+    }
+    #elevation {
+      width: 1250px !important;
+      height: 140px !important;
+      margin: 0 0 0 0;
+      display: block;
+    }
+    #infoBox {
+      position: absolute;
+      top: 18px; right: 24px;
+      background: rgba(255,255,255,0.97);
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 1.08em;
+      font-weight: 400;
+      z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.13);
+      min-width: 180px;
+      text-align: right;
+      pointer-events: none;
     }
     .km-label {
       color: white;
@@ -32,36 +63,50 @@
       text-shadow: 0 2px 4px #000, 0 0px 2px #e23;
       pointer-events: none;
     }
-    /* 지도 컨트롤 등도 최대한 숨김효과 */
-    .leaflet-control-attribution { opacity: 0.25; }
-    .leaflet-control-zoom { opacity: 0.85; }
+    /* 지도 컨트롤 등 최대한 흐리게 */
+    .leaflet-control-attribution { opacity: 0.15; }
+    .leaflet-control-zoom { opacity: 0.7; }
   </style>
 </head>
 <body>
-  <div id="map"></div>
-  <div id="elevationBox">
-    <canvas id="elevation"></canvas>
+  <div id="container">
+    <div id="map">
+      <div id="infoBox">마우스를 코스 위에 올려보세요.</div>
+    </div>
+    <div id="elevationBox">
+      <canvas id="elevation"></canvas>
+    </div>
   </div>
-  <div id="infoBox">마우스를 코스 위에 올려보세요.</div>
-
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="https://unpkg.com/chart.js@4.4.1/dist/chart.umd.js"></script>
-
   <script>
-  // --- GPX 파일 경로 ---
   const gpxUrl = './ultraseoul2025_50k_gm.gpx';
 
-  // --- Grayscale(흑백) 타일 ---
-  // CartoDB Positron(흰회색) - 도로·지명 등 최소화, 단순함
-  const grayscaleUrl =
-    "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
+  // 지도 설정
+  const map = L.map('map', {
+    dragging: true,
+    scrollWheelZoom: false,
+    doubleClickZoom: false,
+    boxZoom: false,
+    touchZoom: false,
+    keyboard: false,
+    zoomControl: true, // 확대/축소는 허용
+    attributionControl: true,
+  }).setView([37.6413, 127.1116], 13);
 
-  // --- 지도 초기화 ---
-  const map = L.map('map').setView([37.6413, 127.1116], 13);
-  L.tileLayer(grayscaleUrl, {
+  // 지도 이동 제한 (드래그만 허용)
+  map.scrollWheelZoom.disable();
+  map.touchZoom.disable();
+  map.doubleClickZoom.disable();
+  map.boxZoom.disable();
+  map.keyboard.disable();
+
+  // 지도 타일 (채도 낮춘 OSM 기본타일, 도로/지명 등 최대한 흐릿하게)
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 18,
-    attribution: '© OpenStreetMap & CartoDB',
-    opacity: 0.90 // 살짝 연하게
+    attribution: '© OpenStreetMap',
+    opacity: 0.52, // 살짝 흐릿하게
+    detectRetina: true
   }).addTo(map);
 
   let chart, elevations = [], distances = [], latlngs = [];
@@ -69,7 +114,6 @@
   let polyline;
   let kmMarkers = [];
 
-  // --- GPX 직접 파싱 및 데이터 추출 ---
   fetch(gpxUrl)
     .then(res => res.text())
     .then(xmlText => {
@@ -93,19 +137,16 @@
         }
       });
 
-      // --- Polyline 표시 (빨간색만 강조) ---
       polyline = L.polyline(latlngs, {
         color: '#FF3D00',
         weight: 5,
-        opacity: 0.88,
+        opacity: 0.91,
         lineCap: 'round'
       }).addTo(map);
-      map.fitBounds(polyline.getBounds());
+      map.fitBounds(polyline.getBounds(), {padding:[10,10]});
 
-      // --- 5km 구간 마커 표시 ---
       drawKmMarkers();
 
-      // --- Polyline 마우스오버 이벤트 (지도 상) ---
       polyline.on('mousemove', function(e) {
         const idx = getClosestIndex(e.latlng, latlngs);
         highlightOnMap(idx);
@@ -120,11 +161,10 @@
         chart.update('none');
       });
 
-      // --- 고도 차트 그리기 ---
       drawElevationChart();
     });
 
-  // --- 5km마다 구간마커 ---
+  // 5km 단위 마커
   function drawKmMarkers() {
     const totalKm = (distances[distances.length-1]/1000);
     for(let k=5; k<=Math.floor(totalKm)+1; k+=5) {
@@ -137,7 +177,7 @@
           fillOpacity: 1,
           weight: 2
         }).addTo(map);
-        // 하얀색 볼드 숫자 라벨
+        // 하얀 볼드 레이블
         const div = L.divIcon({
           className: "km-label",
           html: `<span>${k}</span>`,
@@ -153,7 +193,7 @@
     }
   }
 
-  // --- 고도 차트 (Chart.js) ---
+  // 고도표
   function drawElevationChart() {
     const kmArr = distances.map(m => (m/1000).toFixed(2));
     const ctx = document.getElementById('elevation').getContext('2d');
@@ -169,11 +209,12 @@
           backgroundColor: 'rgba(25,118,210,0.18)',
           pointRadius: 0,
           fill: true,
-          tension: 0.1
+          tension: 0.15
         }]
       },
       options: {
-        responsive: true,
+        responsive: false,
+        maintainAspectRatio: false,
         plugins: { legend: { display: false }},
         scales: {
           x: { display: true, title: { display: true, text: '거리 (km)'} },
@@ -197,7 +238,6 @@
       }
     });
 
-    // 차트 마우스 이동시 지도 연동
     ctx.canvas.addEventListener('mousemove', (e) => {
       const points = chart.getElementsAtEventForMode(e, 'index', {intersect:false}, false);
       if(points.length) {
@@ -228,7 +268,6 @@
     if(highlightMarker) map.removeLayer(highlightMarker);
   }
 
-  // 정보 박스
   function showInfo(idx) {
     const dist = (distances[idx]/1000).toFixed(2);
     const ele = elevations[idx].toFixed(1);
@@ -241,7 +280,6 @@
     document.getElementById('infoBox').innerHTML = '마우스를 코스 위에 올려보세요.';
   }
 
-  // polyline에서 가장 가까운 index
   function getClosestIndex(latlng, arr) {
     let minD = 1e9, idx = 0;
     arr.forEach((p,i)=>{
@@ -250,7 +288,6 @@
     });
     return idx;
   }
-  // 거리계산 (Haversine, m)
   function getDistance(lat1, lon1, lat2, lon2) {
     const R = 6371000;
     const toRad = x => x * Math.PI / 180;
