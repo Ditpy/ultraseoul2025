@@ -4,83 +4,107 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=1080, initial-scale=1.0">
   <title>ULTRA SEOUL 2025 - 50K GPX</title>
-  <!-- Pretendard CDN -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.8/dist/web/static/pretendard.css">
-  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <style>
-    html, body {
-      margin: 0; padding: 0; font-family: Pretendard, 'Segoe UI', Arial, sans-serif; background: #191c1d;
-    }
+    body, html { margin:0; padding:0; background:#191c1d; font-family:Pretendard,'Segoe UI',Arial,sans-serif; }
     #container {
-      width: 1080px; height: 860px; margin: 0 auto; background: #191c1d;
-      display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+      width: 1080px; height: 860px; margin: 0 auto; display: flex; flex-direction: column; align-items:center;
+      background: #191c1d;
     }
-    /* 정보 박스 */
-    #infoBar {
-      width: 100%; min-height: 74px; background: #fff;
-      display: flex; align-items: flex-end; justify-content: space-between;
-      border-radius: 0.7em 0.7em 0 0;
-      border: none;
-      box-shadow: none;
+    #map {
+      width: 1080px; height: 350px; margin:0 auto;
+      filter: saturate(0.3) hue-rotate(-120deg) brightness(1.15) contrast(1.07);
+      /* 푸른색감↑, 붉은색감↓, 채도 30% */
+      border-radius: 0; box-shadow: none;
       position: relative;
-      padding: 0.5em 0 0.1em 0;
-      margin: 0 auto;
-      font-family: Pretendard, 'Segoe UI', Arial, sans-serif;
+    }
+    #infoBar {
+      width: 1080px; height: 70px;
+      background: #fff; display: flex; align-items: center; justify-content: center;
+      border-radius: 0; box-shadow: none; border:none;
+      margin: 0; z-index: 10;
+      position: static;
     }
     #infoBarInner {
-      width: 100%; display: flex; justify-content: center; gap: 2.2em;
-      border: none; box-shadow: none; align-items: flex-end;
+      width: 100%; display: flex; justify-content: space-evenly; align-items: center; height: 100%;
     }
     .infoCol {
-      display: flex; flex-direction: column; align-items: center; justify-content: flex-end; min-width: 90px;
-      font-size: 1.09em; margin: 0 12px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-width: 120px; height: 100%;
+      text-align: center;
     }
     .infoLabel {
-      color: #888; font-size: 0.97em; font-weight: 400; letter-spacing: 0.02em; margin-bottom: 0.08em;
+      color: #888; font-size: 1.05em; font-weight: 400; line-height: 1.16; margin-bottom: 0.16em;
+      display: flex; align-items: center; justify-content: center; height: 50%;
     }
     .infoValue {
-      color: #222; font-size: 1.18em; font-weight: 700; letter-spacing: 0.01em;
+      color: #222; font-size: 1.24em; font-weight: 700; line-height: 1.2; letter-spacing: 0.02em;
+      display: flex; align-items: center; justify-content: center; height: 50%;
     }
-    /* 붉은 구분선 */
     #infoBarLine {
-      width: 100%; height: 2px; background: #ce1126; margin: 0; border: none;
-      position: absolute; left: 0; bottom: -1px; z-index: 1;
+      width: 100%; height: 2px; background: #ce1126;
+      margin: 0; border: none; z-index: 2;
     }
-    /* 지도 */
-    #map {
-      width: 1080px; height: 390px; margin: 0 auto; border-radius: 0 0 0 0;
-      filter: saturate(1.3) hue-rotate(-30deg) brightness(1.12) contrast(1.13);
-      /* 채도 30% ↑, 푸른색 계열 */
-    }
-    /* 고도표 */
     #elevationBox {
-      width: 1080px; height: 180px; background: #fff;
-      border-radius: 0 0 0.8em 0.8em; box-shadow: none; margin: 0; position: relative;
+      width: 1080px; height: 300px; background: #fff;
+      border-radius: 0; box-shadow: none; margin:0; position:relative;
       display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
-      overflow: visible;
     }
     #elevation {
-      width: 1040px; height: 150px; margin: 0 auto; background: #fff; border-radius: 0.45em;
-      display: block; box-shadow: none;
+      width: 1040px; height: 260px; background: #fff; border-radius: 0; display:block; margin:0 auto;
     }
-    /* CP 마커 */
-    .cp-marker {
-      background: #ce1126; color: #fff; font-size: 1em; font-weight: 700;
-      padding: 0.24em 0.8em; border-radius: 1.1em; border: none;
-      position: absolute; z-index: 2;
+    /* CP marker on elevation */
+    .cp-elev-marker {
+      position: absolute; width: 0; height: 260px; left:0; top:0; pointer-events: none;
+      z-index: 3;
+    }
+    .cp-elev-circle {
+      position: absolute; bottom: 0; left: -8px; width: 16px; height:16px; border-radius: 50%;
+      background: #ce1126; border: 2px solid #fff; z-index: 4;
+    }
+    .cp-elev-line {
+      position: absolute; left: 0; width: 2px; background: #ce1126; z-index: 3;
+    }
+    .cp-elev-label {
+      position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%);
+      background: #ce1126; color: #fff; font-weight: 700; font-size: 1em; border-radius: 0.9em;
+      padding: 0.15em 0.9em; white-space: nowrap; z-index: 5;
       box-shadow: none;
     }
-    /* 지도 마우스오버 정보 */
+    /* 지도 라벨(말풍선) */
+    .balloon-label {
+      position: absolute; background:#fff; color:#ce1126; font-weight:700; font-size:1.1em;
+      border-radius:1.1em; padding:0.2em 1em; border: 2px solid #ce1126;
+      box-shadow:none;text-align:center;white-space:nowrap;
+      pointer-events: none;z-index:999;
+      transform: translate(-50%, -120%);
+    }
+    .balloon-arrow {
+      width:0; height:0; border-left:9px solid transparent; border-right:9px solid transparent;
+      border-top:12px solid #fff; position:absolute; left:50%; transform:translateX(-50%); top:98%;
+      z-index:999;
+    }
+    /* 지도 5k 라벨 */
+    .km-label {
+      background: #222; color: #fff; font-weight: 700; font-size: 0.95em;
+      border-radius: 0.8em; padding: 0.13em 0.8em; position:absolute; z-index: 990;
+      box-shadow: none; border: 2px solid #fff;
+      pointer-events: none;
+      text-align: center;
+      left: 50%; transform: translateX(-50%, -120%);
+    }
+    /* 지도 라인 툴팁 */
     .map-tooltip {
       position: absolute; z-index: 9999;
       background: #b12d2d; color: #fff;
-      font-size: 1.05em; font-weight: 600; border-radius: 0.45em;
+      font-size: 1.07em; font-weight: 600; border-radius: 0.45em;
       padding: 0.26em 0.9em; pointer-events: none;
       white-space: nowrap; box-shadow: none; border: none;
       opacity: 0.97;
+      left: 0; top: 0;
     }
-    /* 고도표 마우스오버 정보 */
+    /* 고도표 툴팁 */
     .elev-tooltip {
       position: absolute; z-index: 1000;
       background: #b12d2d; color: #fff;
@@ -88,11 +112,13 @@
       padding: 0.25em 0.8em; pointer-events: none;
       white-space: nowrap; box-shadow: none; border: none;
       opacity: 0.97;
+      left: 0; top: 0;
     }
   </style>
 </head>
 <body>
   <div id="container">
+    <div id="map"></div>
     <div id="infoBar">
       <div id="infoBarInner">
         <div class="infoCol">
@@ -112,12 +138,12 @@
           <span class="infoValue" id="infoMaxEle">--</span>
         </div>
       </div>
-      <div id="infoBarLine"></div>
     </div>
-    <div id="map"></div>
-    <div id="elevationBox">
+    <div id="infoBarLine"></div>
+    <div id="elevationBox" style="position:relative;">
       <canvas id="elevation"></canvas>
       <div id="elevTooltip" class="elev-tooltip" style="display:none"></div>
+      <!-- CP, 10k 마커는 JS로 동적으로 삽입 -->
     </div>
   </div>
   <!-- Leaflet JS -->
@@ -127,10 +153,9 @@
   <script>
   // =================== GPX, 지도, 고도표 ===================
   const gpxUrl = './ultraseoul2025_50k_gm.gpx'; // GPX 파일명을 올바르게!
-  let map, chart, elevations=[], distances=[], latlngs=[];
+  let map, chart, elevations=[], distances=[], latlngs=[], cps=[], kmMarkers=[];
   let totalAsc=0, totalDesc=0, maxEle=0;
 
-  // 거리/고도 정보 업데이트
   function updateInfoBar() {
     document.getElementById('infoDistance').textContent = distances.length ? (distances[distances.length-1]/1000).toFixed(2)+'km' : '--';
     document.getElementById('infoAsc').textContent = Math.round(totalAsc)+'m';
@@ -138,7 +163,6 @@
     document.getElementById('infoMaxEle').textContent = maxEle+'m';
   }
 
-  // 거리 계산
   function getDistance(lat1,lon1,lat2,lon2){
     const R=6371000,toRad=x=>x*Math.PI/180;
     const dLat=toRad(lat2-lat1),dLon=toRad(lon2-lon1);
@@ -146,7 +170,7 @@
     return 2*R*Math.asin(Math.sqrt(a));
   }
 
-  // 지도 마우스오버용 Tooltip
+  // 지도 라인 툴팁
   let mapTooltip;
   function showMapTooltip(latlng, text) {
     if (!mapTooltip) {
@@ -165,71 +189,59 @@
     if (mapTooltip) mapTooltip.style.display = 'none';
   }
 
-  // 고도표 마우스오버용 Tooltip
+  // 고도표 툴팁
   function showElevTooltip(x, y, text) {
     const elevTooltip = document.getElementById('elevTooltip');
     elevTooltip.innerHTML = text;
     elevTooltip.style.left = (x + 30) + 'px';
-    elevTooltip.style.top = (y + 140) + 'px';
+    elevTooltip.style.top = (y + 120) + 'px';
     elevTooltip.style.display = 'block';
   }
   function hideElevTooltip() {
     document.getElementById('elevTooltip').style.display = 'none';
   }
 
-  // 고도표 차트
-  function drawElevationChart() {
-    if (!elevations.length || !distances.length) return;
-    const kmArr=distances.map(m=>(m/1000).toFixed(2));
-    const ctx=document.getElementById('elevation').getContext('2d');
-    if(chart) chart.destroy();
-    chart=new Chart(ctx,{
-      type:'line',
-      data:{
-        labels:kmArr,
-        datasets:[{
-          label:'고도(m)',data:elevations,
-          borderColor:'#ce1126',
-          backgroundColor:'rgba(206,17,38,0.08)',
-          borderWidth:2.3, pointRadius:0, fill:true, tension:0.17
-        }]
-      },
-      options:{
-        responsive:false,maintainAspectRatio:false,
-        plugins:{
-          legend:{display:false},
-          tooltip:{enabled:false}
-        },
-        scales:{
-          x:{display:true,title:{display:true,text:'거리(km)'}},
-          y:{display:true,title:{display:true,text:'고도(m)'}}
-        },
-        animation:false,
-        events: []
-      }
-    });
-
-    // 고도표 마우스오버 이벤트
-    document.getElementById('elevation').onmousemove = function(e){
-      const rect = e.target.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const idx = Math.round((x / rect.width) * (elevations.length-1));
-      if (elevations[idx] && distances[idx]) {
-        showElevTooltip(e.clientX, rect.top, `<b>${(distances[idx]/1000).toFixed(2)}km</b>, <b>${elevations[idx]}m</b>`);
-      }
-    }
-    document.getElementById('elevation').onmouseleave = function(){ hideElevTooltip(); }
-  }
-
-  // 지도, 코스, 마우스오버, CP
+  // 지도, 코스, 라벨, Start/Finish, 5k 마커, 마우스오버
   function addCourseLine() {
-    // 코스 라인
+    // 빨간 얇은 라인
     const polyline = L.polyline(latlngs, {
-      color:'#ce1126', weight:4.4, opacity:0.98, lineCap:'round'
+      color:'#ce1126', weight:3.0, opacity:0.96, lineCap:'round'
     }).addTo(map);
 
-    // 지도 마우스오버 고도/거리 정보
+    // 5k 마커
+    let totalDist = distances[distances.length-1];
+    kmMarkers = [];
+    for(let i=0;i<distances.length;i++){
+      let km = Math.round(distances[i]/1000);
+      if (km % 5 === 0 && (!kmMarkers.includes(km))) {
+        kmMarkers.push(km);
+        const labelHtml = `<div class="km-label" style="left:50%;top:50%;">${km}km</div>`;
+        // 지도상에 라벨을 좌표에 맞게 표시
+        L.marker(latlngs[i], {
+          icon: L.divIcon({
+            className:'', html: labelHtml, iconAnchor:[0,0], iconSize:[46,18]
+          })
+        }).addTo(map);
+      }
+    }
+
+    // Start/Finish 라벨(말풍선)
+    const startIdx = 0, finishIdx = latlngs.length-1;
+    [{idx:startIdx, txt:'START'}, {idx:finishIdx, txt:'FINISH'}].forEach(obj=>{
+      const pt = latlngs[obj.idx];
+      L.marker(pt, {
+        icon: L.divIcon({
+          className:'', html: `
+          <div class="balloon-label">${obj.txt}
+            <div class="balloon-arrow"></div>
+          </div>`,
+          iconAnchor: [54,42], // 말풍선 위치 조정
+          popupAnchor: [0, -35]
+        })
+      }).addTo(map);
+    });
+
+    // 지도 라인 마우스오버 고도/거리 정보
     polyline.on('mousemove', function(e){
       // polyline에서 가장 가까운 index 찾기
       let minI = 0, minDist = Infinity;
@@ -241,38 +253,110 @@
         showMapTooltip(e.latlng, `<b>${(distances[minI]/1000).toFixed(2)}km</b>, <b>${elevations[minI]}m</b>`);
     });
     polyline.on('mouseout', hideMapTooltip);
+  }
 
-    // CP 마커(붉은 스타일, 예시)
-    const cps = [
-      {name:'CP1', dist:10, lat:37.11, lng:128.99},
-      {name:'CP2', dist:19, lat:37.09, lng:129.01},
-      {name:'CP3', dist:30, lat:37.13, lng:128.95},
-      {name:'CP4', dist:36, lat:37.16, lng:128.98},
-      {name:'CP5', dist:44, lat:37.15, lng:129.00}
+  // 고도표 차트, CP/10k 표시
+  function drawElevationChart() {
+    if (!elevations.length || !distances.length) return;
+    const kmArr = distances.map(m=>(m/1000).toFixed(2));
+    const ctx = document.getElementById('elevation').getContext('2d');
+    if(chart) chart.destroy();
+    chart = new Chart(ctx,{
+      type:'line',
+      data:{
+        labels: kmArr,
+        datasets:[{
+          label:'고도(m)',
+          data: elevations,
+          borderColor:{
+            type:'linear',
+            x0:0, y0:0, x1:1040, y1:0,
+            colorStops: {0:'#2798ff', 0.3:'#5defff', 0.6:'#0053b3', 1:'#18388c'}
+          },
+          backgroundColor:'rgba(33,120,255,0.07)',
+          borderWidth:2.2, pointRadius:0, fill:true, tension:0.16
+        }]
+      },
+      options:{
+        responsive:false, maintainAspectRatio:false,
+        plugins:{
+          legend:{display:false},
+          tooltip:{enabled:false}
+        },
+        scales:{
+          x: {
+            display: true,
+            title: {display:true, text:'거리(km)'},
+            ticks: {
+              callback: function(val, idx) {
+                // 10k 단위만 표시
+                return (parseFloat(this.getLabelForValue(val)) % 10 === 0) ? this.getLabelForValue(val) : '';
+              }
+            }
+          },
+          y: {
+            display: true,
+            title: {display:true, text:'고도(m)'},
+            ticks: {
+              stepSize: 100
+            }
+          }
+        },
+        animation:false,
+        events: []
+      }
+    });
+
+    // 고도표 마우스오버
+    document.getElementById('elevation').onmousemove=function(e){
+      const rect = e.target.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const idx = Math.round((x / rect.width) * (elevations.length-1));
+      if (elevations[idx] && distances[idx]) {
+        showElevTooltip(e.clientX, rect.top, `<b>${(distances[idx]/1000).toFixed(2)}km</b>, <b>${elevations[idx]}m</b>`);
+      }
+    };
+    document.getElementById('elevation').onmouseleave = hideElevTooltip;
+
+    // CP, 10k 마커 동적 생성
+    const elevBox = document.getElementById('elevationBox');
+    elevBox.querySelectorAll('.cp-elev-marker').forEach(e=>e.remove());
+    // 예시 CP 목록, 실제 좌표/거리 반영 필요
+    const CPs = [
+      {name:'CP1', km:10}, {name:'CP2', km:19}, {name:'CP3', km:30},
+      {name:'CP4', km:36}, {name:'CP5', km:44}
     ];
-    cps.forEach(cp=>{
-      L.marker([cp.lat, cp.lng], {
-        icon: L.divIcon({
-          className: '', html: `<div class="cp-marker">${cp.name} <span style="font-weight:400;">${cp.dist}km</span></div>`, iconSize:[80,26]
-        })
-      }).addTo(map);
+    CPs.forEach(cp=>{
+      // idx 찾기
+      let idx = distances.findIndex(d=>Math.round(d/1000)===cp.km);
+      if(idx<0) idx=distances.length-1;
+      const left = (distances[idx]/distances[distances.length-1])*1040;
+      const elevY = 260 - ((elevations[idx]-Math.min(...elevations))/(Math.max(...elevations)-Math.min(...elevations)))*220;
+      const marker = document.createElement('div');
+      marker.className = 'cp-elev-marker';
+      marker.style.left = `${left}px`;
+      marker.innerHTML = `
+        <div class="cp-elev-line" style="height:${260-elevY}px;top:${elevY}px;"></div>
+        <div class="cp-elev-circle" style="bottom:0;"></div>
+        <div class="cp-elev-label">${cp.name}<span style="font-weight:400;"> ${cp.km}km</span></div>
+      `;
+      marker.style.top = '0';
+      marker.style.position = 'absolute';
+      elevBox.appendChild(marker);
     });
   }
 
   window.onload = function() {
-    // 지도 생성
     map = L.map('map', {
       dragging:true, scrollWheelZoom:false, doubleClickZoom:false,
       boxZoom:false, touchZoom:false, keyboard:false,
       zoomControl:false, attributionControl:false,
     }).setView([37.125,128.97],12);
 
-    // 타일(위성, 색감보정)
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       maxZoom:17, attribution:'Tiles © Esri'
     }).addTo(map);
 
-    // GPX 로드
     fetch(gpxUrl)
       .then(res=>{
         if (!res.ok) throw new Error();
@@ -297,8 +381,8 @@
         }
         map.fitBounds(L.polyline(latlngs).getBounds(),{padding:[20,20]});
         updateInfoBar();
-        drawElevationChart();
         addCourseLine();
+        drawElevationChart();
       });
   };
   </script>
