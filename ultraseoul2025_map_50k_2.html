@@ -52,7 +52,7 @@
       color: #878d96; font-size: 1.05em; font-weight: 400; margin-bottom: 0.12em; line-height: 1.14; letter-spacing: 0.01em;
     }
     .infoValue {
-      color: #222; font-size: 1.28em; font-weight: 700; letter-spacing: 0.01em; margin-top: 0.10em;
+      color: #e53935; font-size: 1.28em; font-weight: 700; letter-spacing: 0.01em; margin-top: 0.10em;
     }
     #elevationBox {
       width: 100%;
@@ -74,24 +74,47 @@
       display:block; margin:0 auto; box-shadow: none;
       position: relative; z-index: 5;
     }
+    .elev-ytick-label {
+      position: absolute; left: -46px; color: #bbb; font-size: 15.5px; font-weight: 700;
+      text-align: right; width: 44px; pointer-events: none;
+    }
+    .elev-ytick-label-top {
+      color: #e53935; font-size: 17px; font-weight: 800;
+    }
+    .elev-xlabels {
+      position: absolute; left:0; bottom:-32px; width:100%; height:20px; display:flex; justify-content:space-between; pointer-events:none;
+    }
+    .elev-xlabel {
+      font-size:15px; color:#222; font-weight:bold; width:60px; text-align:center; opacity:0.97;
+    }
+    .elev-xunit {
+      position:absolute; left:50%; bottom:-54px; transform:translateX(-50%);
+      font-size:14.5px; color:#666; font-weight:500; letter-spacing:0.03em;
+    }
     /* CP marker on elevation */
     .cp-elev-marker {
       position: absolute; width: 0; height: 156px; left:0; top:0; pointer-events: none;
       z-index: 10;
     }
     .cp-elev-line {
-      position: absolute; left: 0; width: 2px; background: #e53935; z-index: 2;
+      position: absolute; left: 50%; width: 2px; background: #e53935; z-index: 2;
     }
     .cp-elev-circle {
-      position: absolute; width: 15px; height:15px; border-radius: 50%;
-      background: #e53935; border: 2px solid #fff; z-index: 4; left: -7px;
+      position: absolute; left: 50%; transform: translateX(-50%);
+      width: 17px; height:17px; border-radius: 50%;
+      background: #e53935; border: 2px solid #fff; z-index: 4;
     }
     .cp-elev-label {
-      position: absolute; left: 50%; top: -36px; transform: translateX(-50%);
-      color: #e53935; font-weight: 700; font-size: 1.12em;
+      position: absolute; left: 50%; transform: translateX(-50%);
+      top: -37px; margin-bottom: 6px;
+      color: #e53935; font-weight: 800; font-size: 1.17em; line-height:1;
       white-space: nowrap; z-index: 11; background: transparent; padding:0;
+      letter-spacing: 0.01em;
       text-shadow: 0 1px 6px #fff9;
       pointer-events: none;
+    }
+    .cp-elev-klabel {
+      color: #e53935; font-size: 0.98em; font-weight: 500; margin-left: 6px; vertical-align: middle; margin-bottom:0;
       letter-spacing: 0.01em;
     }
     /* 지도 5k 마커 (흰 숫자, 빨간 원형) */
@@ -118,6 +141,16 @@
       stroke-linejoin: round;
       opacity: 1 !important;
       filter: drop-shadow(0 0 3px #fff6);
+    }
+    /* 트랙라인 마우스오버용 세로선 */
+    .elev-hoverline {
+      position:absolute; top:0; width:2px; height:100%; background:rgba(229,57,53,0.45); z-index:999;
+      pointer-events:none;
+    }
+    .elev-hoverpoint {
+      position:absolute; width:15px; height:15px; border-radius:50%; border:2px solid #e53935;
+      background:#fff; z-index:1000; pointer-events:none;
+      box-shadow:0 2px 8px rgba(229,57,53,0.14);
     }
     /* Start/Finish 말풍선 */
     .balloon-label {
@@ -180,7 +213,7 @@
         </div>
       </div>
       <div id="elevationBox">
-        <div id="elevationCanvasWrap">
+        <div id="elevationCanvasWrap" style="position:relative;">
           <canvas id="elevation" width="960" height="156"></canvas>
           <div id="elevTooltip" class="elev-tooltip" style="display:none"></div>
         </div>
@@ -196,18 +229,20 @@
   const gpxUrl = './ultraseoul2025_50k_gm.gpx';
   let map, chart, elevations=[], distances=[], latlngs=[], kmMarkers=[];
   let totalAsc=0, totalDesc=0, maxEle=0;
+  let elevHoverLine, elevHoverPoint, elevXLabels = [];
+  let mapHoverMarker;
 
-  // 예시 CP 목록
+  // CP 정보
   const CPs = [
-    {name:'35k<br>CP1', km:35},
-    {name:'45k<br>CP2', km:45}
+    {name:'CP1', km:35},
+    {name:'CP2', km:45}
   ];
 
   function updateInfoBar() {
-    document.getElementById('infoDistance').textContent = distances.length ? (distances[distances.length-1]/1000).toFixed(2)+'km' : '--';
-    document.getElementById('infoAsc').textContent = Math.round(totalAsc)+'m';
-    document.getElementById('infoDesc').textContent = Math.round(totalDesc)+'m';
-    document.getElementById('infoMaxEle').textContent = maxEle+'m';
+    document.getElementById('infoDistance').innerHTML = distances.length ? `<span style="color:#e53935;">${(distances[distances.length-1]/1000).toFixed(2)}km</span>` : '--';
+    document.getElementById('infoAsc').innerHTML = `<span style="color:#e53935;">${Math.round(totalAsc)}m</span>`;
+    document.getElementById('infoDesc').innerHTML = `<span style="color:#e53935;">${Math.round(totalDesc)}m</span>`;
+    document.getElementById('infoMaxEle').innerHTML = `<span style="color:#e53935;">${maxEle}m</span>`;
   }
 
   function getDistance(lat1,lon1,lat2,lon2){
@@ -250,12 +285,13 @@
 
   // 지도 트랙라인 및 5km 마커 (1번 소스 적용)
   function addCourseLine() {
-    // 트랙 라인(빨간 굵은 라인, 라운드)
+    // 트랙 라인(진짜 레드, 덮어쓰기 위해 color, weight, className도 함께)
     const polyline = L.polyline(latlngs, {
       color: '#C31B20',
       weight: 7,
       opacity: 1,
-      lineCap: 'round'
+      lineCap: 'round',
+      className: 'leaflet-interactive'
     }).addTo(map);
 
     // 5km마다 빨간 원형 마커 + 흰색 숫자 라벨
@@ -284,7 +320,7 @@
       }
     }
 
-    // Start/Finish 말풍선
+    // Start/Finish 말풍선 (마지막 좌표에 정확히 위치)
     const startIdx = 0, finishIdx = latlngs.length-1;
     [{idx:startIdx, txt:'START'}, {idx:finishIdx, txt:'FINISH'}].forEach(obj=>{
       const pt = latlngs[obj.idx];
@@ -300,43 +336,122 @@
       }).addTo(map);
     });
 
-    // 지도 라인 마우스오버 고도/거리 정보
+    // 지도 라인 마우스오버 고도/거리 정보 + 고도표 hover선도 같이 표시
     polyline.on('mousemove', function(e){
       let minI = 0, minDist = Infinity;
       for(let i=0;i<latlngs.length;i++){
         const d = Math.abs(e.latlng.lat-latlngs[i][0]) + Math.abs(e.latlng.lng-latlngs[i][1]);
         if (d < minDist) { minDist = d; minI = i; }
       }
-      if (elevations[minI] && distances[minI])
+      if (elevations[minI] && distances[minI]) {
         showMapTooltip(e.latlng, `<b>${(distances[minI]/1000).toFixed(2)}km</b>, <b>${elevations[minI]}m</b>`);
+        showElevationHover(minI);
+      }
     });
-    polyline.on('mouseout', hideMapTooltip);
+    polyline.on('mouseout', function() {
+      hideMapTooltip();
+      hideElevationHover();
+    });
   }
 
-  // 고도표 차트, CP 표시
+  // 고도표 Hover - 지도에 흰색 마커 표시 및 세로 hoverline 표시
+  function showElevationHover(idx) {
+    // 고도표 Hoverline
+    const elevWrap = document.getElementById('elevationCanvasWrap');
+    let hover = elevWrap.querySelector('.elev-hoverline');
+    if (!hover) {
+      hover = document.createElement('div');
+      hover.className = 'elev-hoverline';
+      elevWrap.appendChild(hover);
+    }
+    const left = (distances[idx]/distances[distances.length-1])*960;
+    hover.style.left = `${left-1}px`;
+
+    // 지도 Hover마커
+    if (mapHoverMarker) map.removeLayer(mapHoverMarker);
+    mapHoverMarker = L.circleMarker(latlngs[idx], {
+      radius: 12,
+      color: '#fff',
+      fillColor: '#fff',
+      fillOpacity: 1,
+      weight: 3,
+      opacity: 0.93
+    }).addTo(map);
+  }
+  function hideElevationHover() {
+    // 고도표 hoverline
+    const elevWrap = document.getElementById('elevationCanvasWrap');
+    let hover = elevWrap.querySelector('.elev-hoverline');
+    if (hover) hover.remove();
+    // 지도 Hover마커
+    if (mapHoverMarker) { map.removeLayer(mapHoverMarker); mapHoverMarker = null; }
+  }
+
+  // 고도표 차트, CP/10k 표시, y축/거리/label 등 커스텀
   function drawElevationChart() {
     if (!elevations.length || !distances.length) return;
-    // 고도축 단계(3개만)
+    // 고도축 단계(3개: 하단, 중간, 최상단)
     const maxEle = Math.max(...elevations), minEle = Math.min(...elevations);
     const yTicks = [
       Math.round(minEle/100)*100,
       Math.round((minEle+maxEle)/2/100)*100,
       Math.round(maxEle/100)*100
     ];
-    // 10k마다 x축 눈금
-    const xLabels = distances.map(m=>(m/1000).toFixed(1));
+    // 10k마다 x축 라벨
+    const elevWrap = document.getElementById('elevationCanvasWrap');
+    elevWrap.querySelectorAll('.elev-ytick-label,.elev-xlabels,.elev-xunit').forEach(e=>e.remove());
+
+    // Y축 텍스트
+    yTicks.forEach((y, i) => {
+      const label = document.createElement('div');
+      label.className = 'elev-ytick-label' + (i===2?' elev-ytick-label-top':'');
+      label.textContent = y + 'm';
+      label.style.top = (18 + (138/2)*(i))+'px';
+      elevWrap.appendChild(label);
+    });
+    // 최고고도 숫자 (상단 오른쪽 고정)
+    const topLabel = document.createElement('div');
+    topLabel.className = 'elev-ytick-label elev-ytick-label-top';
+    topLabel.style.left = 'auto';
+    topLabel.style.right = '-4px';
+    topLabel.style.top = '5px';
+    topLabel.style.textAlign = 'right';
+    topLabel.textContent = yTicks[2] + 'm';
+    elevWrap.appendChild(topLabel);
+
+    // X축 10km 라벨
+    const totalKm = distances[distances.length-1]/1000;
+    const xlabels = document.createElement('div');
+    xlabels.className = 'elev-xlabels';
+    for(let k=0; k<=Math.floor(totalKm)+1; k+=10){
+      const el = document.createElement('span');
+      el.className = 'elev-xlabel';
+      el.style.left = ((k/totalKm)*100)+'%';
+      el.style.position = 'absolute';
+      el.style.transform = 'translateX(-50%)';
+      el.style.fontWeight = 'bold';
+      el.textContent = k;
+      xlabels.appendChild(el);
+    }
+    elevWrap.appendChild(xlabels);
+    // x축 단위
+    const xunit = document.createElement('div');
+    xunit.className = 'elev-xunit';
+    xunit.textContent = '거리(km)';
+    elevWrap.appendChild(xunit);
+
+    // 차트
     const ctx = document.getElementById('elevation').getContext('2d');
     if(chart) chart.destroy();
-
-    // 파란그라데이션 (위→아래로 fade)
+    // 연그레이 가로선
+    Chart.defaults.borderColor = "#ededed";
     const grad = ctx.createLinearGradient(0,0,0,156);
     grad.addColorStop(0, "rgba(22,100,154,0.19)");
     grad.addColorStop(1, "rgba(22,100,154,0)");
-
     chart = new Chart(ctx,{
       type:'line',
       data:{
-        labels: xLabels,
+        labels: distances.map(m=>(m/1000).toFixed(2)),
         datasets:[{
           label:'고도(m)',
           data: elevations,
@@ -357,26 +472,15 @@
           tooltip:{enabled:false}
         },
         scales:{
-          x: {
-            display: true,
-            grid: {display: false, drawBorder: false},
-            ticks: {
-              color: '#16649A',
-              callback: function(val, idx) {
-                const km = parseFloat(this.getLabelForValue(val));
-                return (km % 10 === 0) ? km + 'k' : '';
-              }
-            }
-          },
+          x: {display:false, grid:{display:false}},
           y: {
-            display: true,
-            position: 'left',
-            grid: {display: false, drawBorder: false},
-            ticks: {
-              color: '#16649A',
-              callback: function(value) {
-                return yTicks.includes(value) ? value + 'm' : '';
-              }
+            display:false,
+            grid: {
+              display: true,
+              drawBorder: false,
+              color: (ctx)=> ctx.tick.value===yTicks[0]||ctx.tick.value===yTicks[1]||ctx.tick.value===yTicks[2] ? "#ededed" : "rgba(0,0,0,0)",
+              lineWidth: (ctx)=> ctx.tick.value===yTicks[0]||ctx.tick.value===yTicks[1]||ctx.tick.value===yTicks[2] ? 1.4 : 0,
+              z: 1
             },
             min: yTicks[0],
             max: yTicks[2]
@@ -388,19 +492,23 @@
     });
 
     // 고도표 마우스오버
-    document.getElementById('elevation').onmousemove=function(e){
+    const elevCanvas=document.getElementById('elevation');
+    elevCanvas.onmousemove=function(e){
       const rect = e.target.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const idx = Math.round((x / rect.width) * (elevations.length-1));
       if (elevations[idx] && distances[idx]) {
         showElevTooltip(e.clientX, rect.top, `<b>${(distances[idx]/1000).toFixed(2)}km</b>, <b>${elevations[idx]}m</b>`);
+        showElevationHover(idx);
       }
     };
-    document.getElementById('elevation').onmouseleave = hideElevTooltip;
+    elevCanvas.onmouseleave = function(){
+      hideElevTooltip();
+      hideElevationHover();
+    };
 
-    // CP 마커 동적 생성 (이미지5 스타일)
-    const elevBox = document.getElementById('elevationCanvasWrap');
-    elevBox.querySelectorAll('.cp-elev-marker').forEach(e=>e.remove());
+    // CP 마커 생성
+    elevWrap.querySelectorAll('.cp-elev-marker').forEach(e=>e.remove());
     CPs.forEach(cp=>{
       let idx = distances.findIndex(d=>d/1000 >= cp.km);
       if(idx < 0) idx = distances.length-1;
@@ -411,14 +519,19 @@
       const marker = document.createElement('div');
       marker.className = 'cp-elev-marker';
       marker.style.left = `${left}px`;
+
       marker.innerHTML = `
-        <div class="cp-elev-line" style="height:${y}px;top:0;"></div>
-        <div class="cp-elev-circle" style="top:${y-7.5}px;"></div>
-        <div class="cp-elev-label">${cp.name}</div>
+        <div class="cp-elev-label">
+          ${cp.name}
+          <span class="cp-elev-klabel">${cp.km}k</span>
+        </div>
+        <div class="cp-elev-line" style="
+          height:${y-10}px;
+          top:10px;
+        "></div>
+        <div class="cp-elev-circle" style="top:${y+0}px;"></div>
       `;
-      marker.style.top = '0';
-      marker.style.position = 'absolute';
-      elevBox.appendChild(marker);
+      elevWrap.appendChild(marker);
     });
   }
 
