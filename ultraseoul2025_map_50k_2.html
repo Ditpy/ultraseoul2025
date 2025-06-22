@@ -87,7 +87,6 @@
     #cpMarks {
       width: 97vw; max-width: 606px; min-width: 120px;
       position: absolute; left: 1.8vw; top: 4.1em; height: 72px; z-index: 11; pointer-events: none;
-      /* height는 elevation 캔버스와 맞춰야 함 */
     }
     .cp-vertline {
       position: absolute; width: 0.13em; background: rgba(231,0,19,0.22); left:0; border-radius: 2px;
@@ -205,7 +204,6 @@
     <div id="map-wrap" style="position:relative;">
       <div id="map"></div>
       <div id="hoverInfoMap" class="hoverInfo"></div>
-      <!-- 산 이름 라벨 컨테이너 -->
       <div id="mountainLabels"></div>
     </div>
     <div id="elevationBox">
@@ -216,15 +214,15 @@
       <div id="gpxErrorMsg" style="display:none;"></div>
     </div>
     <div id="downloadBox">
-      <a href="https://raw.githubusercontent.com/Ditpy/ultraseoul2025/main/ultraseoul2025_50k_gm.gpx" download="ultraseoul2025_50k_gm.gpx" class="ultraseoul-btn">GPX DOWNLOAD</a>
+      <a href="./ultraseoul2025_50k_gm.gpx" download="ultraseoul2025_50k_gm.gpx" class="ultraseoul-btn">GPX DOWNLOAD</a>
     </div>
   </div>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="https://unpkg.com/chart.js@4.4.1/dist/chart.umd.js"></script>
   <script>
-  // GPX는 반드시 RAW.githubusercontent.com 절대경로 사용인데 여기서는 다름 ultraseoul2025_50k_gm.gpx!
+  // GPX는 반드시 ./ultraseoul2025_50k_gm.gpx로!
   const gpxUrl = './ultraseoul2025_50k_gm.gpx';
- 
+
   // 산 이름, 위도, 경도 예시 (적절히 수정하세요!)
   const mountains = [
     { name: "함백산", lat: 37.1463, lon: 128.9774 },
@@ -291,7 +289,7 @@
       polyline.on('mousemove',e=>{
         const idx=getClosestIndex(e.latlng,latlngs);
         highlightOnMap(idx);
-        showHoverInfo('elev',idx,e,true); // 지도에서도 고도정보 팝업
+        showHoverInfo('elev',idx,e,true);
       });
       polyline.on('mouseout',()=>{removeHighlight();hideHoverInfo('elev');});
 
@@ -303,11 +301,10 @@
     .catch(err=>{
       document.getElementById('gpxErrorMsg').style.display = 'block';
       document.getElementById('gpxErrorMsg').innerText =
-        "코스 GPX 파일을 불러올 수 없습니다. (ultraseoul2025_50k_gm.gpx 파일이 서버에 없거나 경로가 잘못되었습니다)";
+        "코스 GPX 파일을 불러올 수 없습니다. (ultraseoul2025_50k_gm.gpx 파일이 이 페이지와 같은 폴더에 없거나 경로가 잘못되었습니다)";
     });
 
   function drawMountainLabels() {
-    // 지도 컨테이너에 라벨 DOM 추가
     const wrap = document.getElementById('mountainLabels');
     wrap.innerHTML = '';
     mountains.forEach(m => {
