@@ -7,77 +7,280 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.8/dist/web/static/pretendard.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <style>
-    /* …기존 스타일 생략… */
-
+    html, body { margin:0; padding:0; background:#191c1d; font-family:Pretendard,'Segoe UI',Arial,sans-serif;}
+    #container { width:1080px; min-height:100vh; margin:0 auto; display:flex; flex-direction:column; align-items:center; background:#191c1d;}
+    #map { width:1080px; height:860px; max-width:100vw; position:relative; border-radius:0; box-shadow:none; background:#222; transition: height 0.25s;}
+    @media (max-width: 1200px) {
+      #container, #map, #lowerbox { width:100vw !important; min-width:0; }
+      #map { height: 55vw; min-height:320px; max-height:90vh;}
+    }
+    @media (max-width: 700px) {
+      #map { height: 56vw; min-height:200px; }
+      #lowerbox { width:100vw !important; }
+    }
+    #map-controls {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .map-btn {
+      background: #fff;
+      border: none;
+      border-radius: 7px;
+      box-shadow: 0 1.5px 6px #0003;
+      width: 54px;
+      height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.35em;
+      color: #e53935;
+      cursor: pointer;
+      transition: background 0.15s;
+      margin: 0;
+      outline: none;
+      padding: 0;
+    }
+    .map-btn svg {
+      width: 34px;
+      height: 34px;
+      display: block;
+    }
+    .map-btn:hover, .map-btn:active {
+      background: #f9ecec;
+    }
+    /* 지도 내 마우스over 위치마커(빨간색) */
+    .map-hover-marker {
+      filter: drop-shadow(0 2px 6px #e5393544);
+    }
+    #lowerbox {
+      width: 1080px;
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      align-items: center;
+      justify-content: flex-start;
+      margin: 0;
+      border-radius: 0;
+      box-shadow: 0 1px 14px rgba(60,80,120,0.07);
+      position: relative;
+      overflow: visible;
+      height: auto;
+    }
+    #infoBar {
+      width: 1080px; height: 84px;
+      display: flex; align-items: center; justify-content: center;
+      background: #fff;
+      border-radius: 0; box-shadow: none; border: none;
+      margin: 0; z-index: 10; position: static;
+      border-bottom: 2px solid #e53935;
+    }
+    #infoBarInner {
+      width: 100%; display: flex; justify-content: space-evenly; align-items: center; height: 100%;
+    }
+    .infoCol {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-width: 110px; height: 100%; text-align: center;
+    }
+    .infoLabel {
+      color: #878d96; font-size: 1.05em; font-weight: 400; margin-bottom: 0.12em; line-height: 1.14; letter-spacing: 0.01em;
+    }
+    .infoValue {
+      color: #e53935; font-size: 1.32em; font-weight: 700; letter-spacing: 0.01em; margin-top: 0.10em; line-height: 1.3;
+    }
+    #elevationBox {
+      width: 100%;
+      height: 460px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: #fff;
+      position: relative;
+      margin: 0;
+      padding: 0;
+    }
+    #elevationCanvasWrap {
+      width: calc(100% - 160px);
+      max-width: calc(100% - 160px);
+      min-width: 300px;
+      height: 350px;
+      min-height: 350px;
+      position: relative;
+      background: none;
+      border-radius: 0;
+      display: block;
+      box-shadow: none;
+      overflow: visible;
+      margin: 0 auto;
+      padding: 0;
+    }
+    #elevation {
+      position: absolute;
+      display: block;
+      background: none;
+      border-radius: 0;
+      box-shadow: none;
+      margin: 0;
+      z-index: 5;
+    }
+    .elev-ytick-label {
+      position: absolute; left: 0; color: #888; font-size: 15.5px; font-weight: 600;
+      text-align: right; width: 60px; pointer-events: none; /* ← 60px로 수정 */
+      z-index: 2;
+      white-space: nowrap;
+      transform: translateX(-100%);
+      letter-spacing: 0.01em;
+    }
+    .elev-ytick-label .elev-unit-title {
+      display: block;
+      font-size: 11.5px;
+      font-weight: 400;
+      color: #b0b0b0;
+      font-family: Pretendard, Arial, sans-serif;
+      letter-spacing: 0.01em;
+      margin-bottom: 2px;
+    }
+    .elev-xlabels {
+      position: absolute; left:0; width:100%; display:flex; justify-content:space-between; pointer-events:none;
+    }
+    .elev-xlabel {
+      font-size:15px; color:#888; font-weight:600; width:60px; text-align:center; opacity:0.97;
+      letter-spacing: 0.01em;
+    }
+    .elev-xunit-wrap {
+      position:absolute; left:50%; transform:translateX(-50%);
+      bottom: 0;
+      width: 120px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      pointer-events: none;
+    }
+    .elev-xunit {
+      font-size:15.5px; color:#888; font-weight:600;
+      letter-spacing: 0.01em;
+      margin-bottom: 1px;
+    }
+    .elev-xunit-title {
+      font-size: 11.5px;
+      font-weight: 400;
+      color: #b0b0b0;
+      font-family: Pretendard, Arial, sans-serif;
+      letter-spacing: 0.01em;
+      margin-top: 0;
+    }
+    .cp-elev-marker {
+      position: absolute; width: 0; pointer-events: none;
+      z-index: 10;
+      display: flex; flex-direction: column; align-items: center;
+      overflow: visible;
+    }
+    .cp-elev-line {
+      position: absolute; left: 50%; transform: translateX(-50%);
+      width: 2px; background: #e53935; z-index: 2;
+    }
+    .cp-elev-circle {
+      position: absolute; left: 50%; transform: translateX(-50%);
+      width: 17px; height:17px; border-radius: 50%;
+      background: #e53935; border: none; z-index: 4;
+    }
+    .cp-elev-label {
+      position: absolute; left: 50%; transform: translateX(-50%);
+      color: #e53935; font-weight: 800; font-size: 1.12em; line-height:1.08; white-space: nowrap; z-index: 11; background: transparent; padding:0;
+      letter-spacing: 0.01em;
+      text-shadow: 0 1px 6px #fff9;
+      pointer-events: none;
+      text-align: center;
+      display: flex; flex-direction: column; gap:0;
+      width: 48px;
+    }
+    .cp-elev-label-cp { font-size: 1.07em; font-weight: 800; line-height: 1.0; }
+    .cp-elev-label-km { font-size: 1.01em; font-weight: 500; color: #e53935; line-height: 1.0; margin-top:1px; }
+    .cp-map-dot-label {
+      position: absolute;
+      top: -38px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: transparent;
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.1em;
+      border-radius: 1.1em;
+      padding: 0.18em 1.13em;
+      border: none;
+      box-shadow: none;
+      text-align: center;
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 999;
+      font-family: Pretendard, Arial, sans-serif;
+      letter-spacing: 0.01em;
+      text-shadow: 0 1px 5px #0009;
+    }
+    .cp-map-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #e53935;
+      display: block;
+      border: none;
+    }
+    .map-hover-marker {
+      filter: drop-shadow(0 2px 6px #e5393544);
+    }
+    .balloon-label {
+      position: absolute; 
+      background: transparent !important;
+      color: #fff !important;
+      font-weight:700; font-size:1.1em;
+      border-radius:1.1em; padding:0.18em 1.13em; 
+      border: none !important;
+      box-shadow:none;text-align:center;white-space:nowrap;
+      pointer-events: none;z-index:999;
+      transform: translate(-50%, -120%);
+      font-family: Pretendard, Arial, sans-serif;
+      text-shadow: 0 1px 5px #0009;
+    }
+    .balloon-arrow {
+      width:0; height:0; border-left:9px solid transparent; border-right:9px solid transparent;
+      border-top:12px solid #fff; position:absolute; left:50%; transform:translateX(-50%); top:98%;
+      z-index:999;
+    }
+    .map-tooltip {
+      position: absolute; z-index: 9999;
+      background: #b12d2d; color: #fff;
+      font-size: 1.07em; font-weight: 600; border-radius: 0.45em;
+      padding: 0.26em 0.9em; pointer-events: none;
+      white-space: nowrap; box-shadow: none; border: none;
+      opacity: 0.97;
+      left: 0; top: 0;
+      display: none;
+    }
+    .elev-tooltip {
+      position: absolute; z-index: 1000;
+      background: #b12d2d; color: #fff;
+      font-size: 1.03em; font-weight: 600; border-radius: 0.45em;
+      padding: 0.25em 0.8em; pointer-events: none;
+      white-space: nowrap; box-shadow: none; border: none;
+      opacity: 0.97;
+      left: 0; top: 0;
+      display: none;
+    }
+    .elev-gridline {
+      position: absolute;
+      left: 0; right: 0;
+      height: 1px;
+      background: #888;
+      opacity: 1;
+      z-index: 1;
+    }
     .elev-gridline-top {
       border-top: 1.5px dashed #888 !important;
       background: none !important;
       opacity: 1 !important;
       height: 0 !important;
     }
-
-    /* ─── 여기부터 snippet-1 통합 CSS ─── */
-    /* elevation 박스 전체 여백 및 크기 조정 */
-    .elevation-container {
-      padding: 40px 60px 60px 60px; /* top, right, bottom, left */
-      box-sizing: border-box;
-      position: relative;
-      background: #fff;            /* 필요에 따라 조정 */
-    }
-
-    /* 고도 축 텍스트가 잘리지 않도록 왼쪽 여백 확보 */
-    .elevation-axis-left {
-      width: 50px; /* 필요시 더 키우기 */
-      margin-right: 10px;
-      text-align: right;
-      font-size: 12px;
-    }
-
-    /* 하단 거리 텍스트 여유 공간 확보 */
-    .elevation-axis-bottom {
-      height: 40px;
-      margin-top: 10px;
-      font-size: 12px;
-      text-align: center;
-    }
-
-    /* 타이틀 위치 조정 */
-    .elevation-title {
-      font-size: 20px;
-      font-weight: 700;
-      position: absolute;
-      top: 10px;
-      left: 20px; /* 더 왼쪽으로 보내고 싶으면 0 또는 음수로 */
-      color: #333;
-    }
-    /* ─────────────────────────────────── */
-  </style>
-</head>
-<body>
-  <div id="container">
-    <!-- map …생략… -->
-
-    <div id="lowerbox">
-      <!-- infoBar …생략… -->
-
-      <!-- 고도 프로필 영역 -->
-      <div id="elevationBox">
-        <div class="elevation-container">
-          <!-- snippet-1 의 elevation-title -->
-          <div class="elevation-title">고도 프로필</div>
-          <!-- 기존 캔버스 래퍼 -->
-          <div id="elevationCanvasWrap">
-            <canvas id="elevation"></canvas>
-            <div id="elevTooltip" class="elev-tooltip" style="display:none"></div>
-          </div>
-          <!-- 예: X축, Y축 레이블에 snippet-1 클래스 사용 가능 -->
-          <div class="elevation-axis-left">0m</div>
-          <div class="elevation-axis-bottom">0km</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 스크립트 …생략… -->
-</body>
-</html>
+ *
+
