@@ -10,6 +10,36 @@
     html, body { margin:0; padding:0; background:#191c1d; font-family:Pretendard,'Segoe UI',Arial,sans-serif;}
     #container { width:1080px; min-height:100vh; margin:0 auto; display:flex; flex-direction:column; align-items:center; background:#191c1d;}
     #map { width:1080px; height:480px; position:relative; border-radius:0; box-shadow:none; background:#222; }
+    #map-controls {
+      position: absolute;
+      top: 18px;
+      left: 18px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .map-btn {
+      background: #fff;
+      border: none;
+      border-radius: 7px;
+      box-shadow: 0 1px 4px #0003;
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.38em;
+      color: #e53935;
+      cursor: pointer;
+      transition: background 0.15s;
+      margin: 0;
+      outline: none;
+      padding: 0;
+    }
+    .map-btn:hover, .map-btn:active {
+      background: #f9ecec;
+    }
     #lowerbox {
       width: 1080px;
       display: flex;
@@ -139,6 +169,9 @@
       background: transparent;
       display: inline-block;
       font-family: Pretendard, Arial, sans-serif;
+      /* 아웃라인 선 제거 */
+      border: none !important;
+      box-shadow: none !important;
     }
     .leaflet-marker-icon,
     .leaflet-zoom-animated,
@@ -157,7 +190,8 @@
     }
     .balloon-label {
       position: absolute; background:#fff; color:#e53935; font-weight:700; font-size:1.1em;
-      border-radius:1.1em; padding:0.18em 1.13em; border: 2px solid #e53935;
+      border-radius:1.1em; padding:0.18em 1.13em;
+      /* border: 2px solid #e53935; */ /* 아웃라인 제거 */
       box-shadow:none;text-align:center;white-space:nowrap;
       pointer-events: none;z-index:999;
       transform: translate(-50%, -120%);
@@ -199,7 +233,13 @@
 </head>
 <body>
   <div id="container">
-    <div id="map"></div>
+    <div id="map">
+      <div id="map-controls">
+        <button class="map-btn" id="map-zoom-in" title="확대"><span>+</span></button>
+        <button class="map-btn" id="map-zoom-out" title="축소"><span>-</span></button>
+        <button class="map-btn" id="map-reset-view" title="초기화"><span>⟳</span></button>
+      </div>
+    </div>
     <div id="lowerbox">
       <div id="infoBar">
         <div id="infoBarInner">
@@ -243,6 +283,7 @@
   const X_AXIS_HEIGHT = 40;
   const ELEV_CANVAS_MIN_HEIGHT = 180;
   const ELEV_CANVAS_MIN_WIDTH = 300;
+  let initialMapView = { center: [37.57,127.02], zoom: 11 };
 
   // 변경값
   let gpxUrl = './ultraseoul2025_50k_gm.gpx';
@@ -257,6 +298,7 @@
   let map, chart, elevations=[], distances=[], latlngs=[];
   let totalAsc=0, totalDesc=0, maxEle=0, minEle=0;
   let mapTooltip, mapHoverMarker, lastTooltipIdx = null;
+  let trackPolyline = null;
 
   function updateInfoBar() {
     document.getElementById('infoDistance').innerHTML = distances.length ? `<span style="color:#e53935;">${(distances[distances.length-1]/1000).toFixed(2)}km</span>` : '--';
@@ -330,36 +372,45 @@
       dragging:true, scrollWheelZoom:false, doubleClickZoom:false,
       boxZoom:false, touchZoom:false, keyboard:false,
       zoomControl:false, attributionControl:false
-    }).setView([37.57,127.02],11);
+    }).setView(initialMapView.center, initialMapView.zoom);
 
     // Esri World Imagery (항공지도)
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       maxZoom:17,
       attribution:'Tiles © Esri, Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community'
     }).addTo(map);
+
+    // 지도 확대/축소/초기화 컨트롤
+    document.getElementById('map-zoom-in').onclick = () => map.zoomIn();
+    document.getElementById('map-zoom-out').onclick = () => map.zoomOut();
+    document.getElementById('map-reset-view').onclick = () => {
+      // 트랙이 있으면 fitBounds, 아니면 초기 중심
+      if (trackPolyline && latlngs.length > 1) {
+        map.fitBounds(trackPolyline.getBounds(), {padding:[20,20]});
+      } else {
+        map.setView(initialMapView.center, initialMapView.zoom);
+      }
+    };
   }
 
   function addCourseLine() {
-    const polyline = L.polyline(latlngs, {
+    // 기존 라인 있으면 삭제
+    if (trackPolyline) map.removeLayer(trackPolyline);
+
+    trackPolyline = L.polyline(latlngs, {
       color: '#C31B20',
-      weight: 7,
+      weight: 5, // 기존보다 2px 얇게
       opacity: 1,
       lineCap: 'round',
       className: 'leaflet-interactive'
     }).addTo(map);
 
-    // 5km마다 마커 + 라벨
+    // 5km마다 마커 + 라벨(아웃라인 없음)
     const totalKm = distances[distances.length-1] / 1000;
     for(let k=5; k<=Math.floor(totalKm)+1; k+=5){
       const idx = distances.findIndex(d=>d/1000>=k);
       if(idx!==-1){
-        const marker = L.circleMarker(latlngs[idx], {
-          radius: 15,
-          color: '#C31B20',
-          fillColor: '#C31B20',
-          fillOpacity: 1,
-          weight: 2
-        }).addTo(map);
+        // 아웃라인 없는 마커
         const div = L.divIcon({
           className: "km-label",
           html: `<span>${k}</span>`,
@@ -370,7 +421,7 @@
       }
     }
 
-    // Start/Finish 말풍선
+    // Start/Finish 말풍선 (아웃라인 없음)
     [{
       idx: 0,
       html: `<div class="balloon-label">START<div class="balloon-arrow"></div></div>`
@@ -383,7 +434,7 @@
       }).addTo(map);
     });
 
-    polyline.on('mousemove', function(e){
+    trackPolyline.on('mousemove', function(e){
       let minI = 0, minDist = Infinity;
       for(let i=0;i<latlngs.length;i++){
         const d = Math.abs(e.latlng.lat-latlngs[i][0]) + Math.abs(e.latlng.lng-latlngs[i][1]);
@@ -401,7 +452,7 @@
         lastTooltipIdx = minI;
       }
     });
-    polyline.on('mouseout', function() {
+    trackPolyline.on('mouseout', function() {
       hideMapTooltip();
       hideElevationHover();
       hideElevTooltip();
