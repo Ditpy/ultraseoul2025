@@ -577,6 +577,9 @@
     const elevCanvas = document.getElementById('elevation');
     const left = elevCanvas.offsetLeft + (distances[idx]/distances[distances.length-1])*elevCanvas.offsetWidth;
     hover.style.left = `${left-1}px`;
+    hover.style.top = `${GRAPH_TOP_MARGIN}px`; // 그래프 위쪽 여백만큼 내림
+    hover.style.height = `${elevCanvas.offsetHeight}px`; // 그래프 실제 높이만큼만 표시
+    hover.style.width = "2px";
   }
   function hideElevationHover() {
     const elevWrap = document.getElementById('elevationCanvasWrap');
