@@ -12,24 +12,24 @@
     #map { width:1080px; height:480px; position:relative; border-radius:0; box-shadow:none; background:#222; }
     #map-controls {
       position: absolute;
-      top: 18px;
-      left: 18px;
+      top: 20px;
+      left: 20px;
       z-index: 1000;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 10px;
     }
     .map-btn {
       background: #fff;
       border: none;
       border-radius: 7px;
-      box-shadow: 0 1px 4px #0003;
-      width: 38px;
-      height: 38px;
+      box-shadow: 0 1.5px 6px #0003;
+      width: 54px;
+      height: 54px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.38em;
+      font-size: 2.35em;
       color: #e53935;
       cursor: pointer;
       transition: background 0.15s;
@@ -37,8 +37,17 @@
       outline: none;
       padding: 0;
     }
+    .map-btn svg {
+      width: 34px;
+      height: 34px;
+      display: block;
+    }
     .map-btn:hover, .map-btn:active {
       background: #f9ecec;
+    }
+    /* 지도 내 마우스over 위치마커(빨간색) */
+    .map-hover-marker {
+      filter: drop-shadow(0 2px 6px #e5393544);
     }
     #lowerbox {
       width: 1080px;
@@ -109,24 +118,21 @@
       z-index: 5;
     }
     .elev-ytick-label {
-      position: absolute; left: 0; color: #bbb; font-size: 15.5px; font-weight: 700;
+      position: absolute; left: 0; color: #16649A; font-size: 15.5px; font-weight: 700;
       text-align: right; width: 44px; pointer-events: none;
       z-index: 2;
       white-space: nowrap;
       transform: translateX(-100%);
     }
-    .elev-ytick-label-top {
-      color: #e53935; font-size: 17px; font-weight: 800;
-    }
     .elev-xlabels {
       position: absolute; left:0; width:100%; display:flex; justify-content:space-between; pointer-events:none;
     }
     .elev-xlabel {
-      font-size:15px; color:#222; font-weight:bold; width:60px; text-align:center; opacity:0.97;
+      font-size:15px; color:#16649A; font-weight:bold; width:60px; text-align:center; opacity:0.97;
     }
     .elev-xunit {
       position:absolute; left:50%; transform:translateX(-50%);
-      font-size:14.5px; color:#666; font-weight:500; letter-spacing:0.03em;
+      font-size:14.5px; color:#16649A; font-weight:500; letter-spacing:0.03em;
     }
     .cp-elev-marker {
       position: absolute; width: 0; pointer-events: none;
@@ -155,43 +161,25 @@
     }
     .cp-elev-label-cp { font-size: 1.07em; font-weight: 800; line-height: 1.0; }
     .cp-elev-label-km { font-size: 1.01em; font-weight: 500; color: #e53935; line-height: 1.0; margin-top:1px; }
-    .km-label {
-      color: #fff;
-      font-weight: bold;
-      font-size: 16px;
-      text-align: center;
-      text-shadow: none;
-      pointer-events: none;
-      width: 22px;
-      height: 22px;
-      line-height: 22px;
+    .cp-map-dot {
+      width: 16px;
+      height: 16px;
       border-radius: 50%;
-      background: transparent;
-      display: inline-block;
-      font-family: Pretendard, Arial, sans-serif;
-      /* 아웃라인 선 제거 */
-      border: none !important;
-      box-shadow: none !important;
+      background: #e53935;
+      border: 2px solid #fff;
+      box-shadow: 0 1px 6px #0002;
+      display: block;
     }
-    .leaflet-marker-icon,
-    .leaflet-zoom-animated,
-    .leaflet-interactive {
-      border: none !important;
-      box-shadow: none !important;
-    }
-    .elev-hoverline {
-      position:absolute; top:0; width:2px; height:100%; background:rgba(229,57,53,0.45); z-index:999;
-      pointer-events:none;
-    }
-    .elev-hoverpoint {
-      position:absolute; width:15px; height:15px; border-radius:50%; border:2px solid #e53935;
-      background:#fff; z-index:1000; pointer-events:none;
-      box-shadow:0 2px 8px rgba(229,57,53,0.14);
+    .map-hover-marker {
+      filter: drop-shadow(0 2px 6px #e5393544);
     }
     .balloon-label {
-      position: absolute; background:#fff; color:#e53935; font-weight:700; font-size:1.1em;
-      border-radius:1.1em; padding:0.18em 1.13em;
-      /* border: 2px solid #e53935; */ /* 아웃라인 제거 */
+      position: absolute; 
+      background: transparent !important;
+      color: #fff !important;
+      font-weight:700; font-size:1.1em;
+      border-radius:1.1em; padding:0.18em 1.13em; 
+      border: none !important;
       box-shadow:none;text-align:center;white-space:nowrap;
       pointer-events: none;z-index:999;
       transform: translate(-50%, -120%);
@@ -226,7 +214,8 @@
       position: absolute;
       left: 0; right: 0;
       height: 1px;
-      background: #e0e0e0;
+      background: #16649A;
+      opacity: 1;
       z-index: 1;
     }
   </style>
@@ -235,9 +224,23 @@
   <div id="container">
     <div id="map">
       <div id="map-controls">
-        <button class="map-btn" id="map-zoom-in" title="확대"><span>+</span></button>
-        <button class="map-btn" id="map-zoom-out" title="축소"><span>-</span></button>
-        <button class="map-btn" id="map-reset-view" title="초기화"><span>⟳</span></button>
+        <button class="map-btn" id="map-zoom-in" title="확대">
+          <svg viewBox="0 0 40 40" fill="none"><path d="M20 8v24M8 20h24" stroke="#e53935" stroke-width="4" stroke-linecap="round"/></svg>
+        </button>
+        <button class="map-btn" id="map-zoom-out" title="축소">
+          <svg viewBox="0 0 40 40" fill="none"><path d="M8 20h24" stroke="#e53935" stroke-width="4" stroke-linecap="round"/></svg>
+        </button>
+        <button class="map-btn" id="map-reset-view" title="초기화">
+          <!-- 무료 SVG 타겟 아이콘 (image1 참고, 심플 버전) -->
+          <svg viewBox="0 0 44 44" fill="none">
+            <circle cx="22" cy="22" r="13" stroke="#e53935" stroke-width="3.5"/>
+            <circle cx="22" cy="22" r="4.5" fill="none" stroke="#e53935" stroke-width="3"/>
+            <line x1="22" y1="5" x2="22" y2="13" stroke="#e53935" stroke-width="3.5"/>
+            <line x1="22" y1="31" x2="22" y2="39" stroke="#e53935" stroke-width="3.5"/>
+            <line x1="31" y1="22" x2="39" y2="22" stroke="#e53935" stroke-width="3.5"/>
+            <line x1="5" y1="22" x2="13" y2="22" stroke="#e53935" stroke-width="3.5"/>
+          </svg>
+        </button>
       </div>
     </div>
     <div id="lowerbox">
@@ -299,6 +302,7 @@
   let totalAsc=0, totalDesc=0, maxEle=0, minEle=0;
   let mapTooltip, mapHoverMarker, lastTooltipIdx = null;
   let trackPolyline = null;
+  let graphHoverMarker = null; // 지도위 그래프-마우스오버 마커
 
   function updateInfoBar() {
     document.getElementById('infoDistance').innerHTML = distances.length ? `<span style="color:#e53935;">${(distances[distances.length-1]/1000).toFixed(2)}km</span>` : '--';
@@ -354,6 +358,7 @@
   function hideMapTooltip() {
     if (mapTooltip) mapTooltip.style.display = 'none';
   }
+
   function showElevTooltip(x, y, text) {
     const elevTooltip = document.getElementById('elevTooltip');
     elevTooltip.innerHTML = text;
@@ -384,7 +389,6 @@
     document.getElementById('map-zoom-in').onclick = () => map.zoomIn();
     document.getElementById('map-zoom-out').onclick = () => map.zoomOut();
     document.getElementById('map-reset-view').onclick = () => {
-      // 트랙이 있으면 fitBounds, 아니면 초기 중심
       if (trackPolyline && latlngs.length > 1) {
         map.fitBounds(trackPolyline.getBounds(), {padding:[20,20]});
       } else {
@@ -394,34 +398,33 @@
   }
 
   function addCourseLine() {
-    // 기존 라인 있으면 삭제
     if (trackPolyline) map.removeLayer(trackPolyline);
 
     trackPolyline = L.polyline(latlngs, {
       color: '#C31B20',
-      weight: 5, // 기존보다 2px 얇게
+      weight: 5,
       opacity: 1,
       lineCap: 'round',
       className: 'leaflet-interactive'
     }).addTo(map);
 
-    // 5km마다 마커 + 라벨(아웃라인 없음)
-    const totalKm = distances[distances.length-1] / 1000;
-    for(let k=5; k<=Math.floor(totalKm)+1; k+=5){
-      const idx = distances.findIndex(d=>d/1000>=k);
-      if(idx!==-1){
-        // 아웃라인 없는 마커
-        const div = L.divIcon({
-          className: "km-label",
-          html: `<span>${k}</span>`,
-          iconSize: [22,22],
-          iconAnchor: [11,11]
-        });
-        L.marker(latlngs[idx], {icon:div, interactive:false}).addTo(map);
-      }
-    }
+    // --- 5km 구간 마커 제거, 대신 cp 지점 dot 추가 ---
+    CPs.forEach(cp=>{
+      let idx = distances.findIndex(d=>d/1000 >= cp.km);
+      if(idx < 0) idx = distances.length-1;
+      const latlng = latlngs[idx];
 
-    // Start/Finish 말풍선 (아웃라인 없음)
+      // 지도상 dot(16x16, 흰 테두리)
+      const dotIcon = L.divIcon({
+        className: '',
+        html: `<span class="cp-map-dot"></span>`,
+        iconSize: [16,16],
+        iconAnchor: [8,8]
+      });
+      L.marker(latlng, {icon:dotIcon, interactive:false}).addTo(map);
+    });
+
+    // Start/Finish 말풍선 (텍스트 흰색, 배경투명, 아웃라인X, arrow는 유지)
     [{
       idx: 0,
       html: `<div class="balloon-label">START<div class="balloon-arrow"></div></div>`
@@ -443,12 +446,8 @@
       if (elevations[minI] && distances[minI]) {
         showMapTooltip(e.latlng, `<b>${(distances[minI]/1000).toFixed(2)}km</b>, <b>${elevations[minI]}m</b>`);
         showElevationHover(minI);
-        const elevCanvas = document.getElementById('elevation');
-        showElevTooltip(
-          elevCanvas.getBoundingClientRect().left + (distances[minI]/distances[distances.length-1])*elevCanvas.offsetWidth,
-          elevCanvas.getBoundingClientRect().top,
-          `<b>${(distances[minI]/1000).toFixed(2)}km</b>, <b>${elevations[minI]}m</b>`
-        );
+        // 지도 마우스 오버 시, 그래프 Hover마커도 표시
+        updateGraphHoverMarker(minI);
         lastTooltipIdx = minI;
       }
     });
@@ -456,6 +455,7 @@
       hideMapTooltip();
       hideElevationHover();
       hideElevTooltip();
+      removeGraphHoverMarker();
       lastTooltipIdx = null;
     });
   }
@@ -478,6 +478,29 @@
     if (hover) hover.remove();
   }
 
+  // 그래프 마우스오버시 지도 트랙에 빨간 위치마커(이미지2 스타일) 표시
+  function updateGraphHoverMarker(idx) {
+    if (!latlngs[idx]) return;
+    // 기존 마커 제거
+    removeGraphHoverMarker();
+    // SVG로 이미지2 스타일 마커(빨간색)
+    const icon = L.divIcon({
+      className: 'map-hover-marker',
+      iconSize: [44,44],
+      iconAnchor: [22,44],
+      html:
+        `<svg width="44" height="44" viewBox="0 0 44 44">
+          <ellipse cx="22" cy="34" rx="8" ry="4" fill="#fff" opacity="0.35"/>
+          <path d="M22 8c6.627 0 12 5.373 12 12 0 7.627-12 16-12 16s-12-8.373-12-16c0-6.627 5.373-12 12-12Zm0 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z" fill="#e53935" stroke="#fff" stroke-width="2"/>
+          <circle cx="22" cy="19.5" r="3.5" fill="#fff"/>
+        </svg>`
+    });
+    graphHoverMarker = L.marker(latlngs[idx], {icon, interactive: false}).addTo(map);
+  }
+  function removeGraphHoverMarker() {
+    if (graphHoverMarker) { map.removeLayer(graphHoverMarker); graphHoverMarker = null; }
+  }
+
   function getDynamicElevationTicks(elevMax) {
     const step = Math.ceil((elevMax / 4) / 100) * 100;
     return [0, step, step*2, step*3, step*4, step*5];
@@ -488,15 +511,13 @@
     const elevWrap = document.getElementById('elevationCanvasWrap');
     const elevCanvas = document.getElementById('elevation');
 
-    // 계산: 내부 여백(축/CP 등) 반영하여 그래프 영역 산정
     const wrapWidth = elevWrap.offsetWidth;
     const wrapHeight = elevWrap.offsetHeight;
     const graphLeft = Y_AXIS_WIDTH;
     const graphTop = CP_LABEL_HEIGHT + CP_LABEL_TOP_MARGIN;
-    const graphWidth = Math.max(wrapWidth - Y_AXIS_WIDTH - 10, ELEV_CANVAS_MIN_WIDTH); // 우측 10px
+    const graphWidth = Math.max(wrapWidth - Y_AXIS_WIDTH - 10, ELEV_CANVAS_MIN_WIDTH);
     const graphHeight = Math.max(wrapHeight - graphTop - X_AXIS_HEIGHT, ELEV_CANVAS_MIN_HEIGHT);
 
-    // canvas 위치/크기 및 속성 지정
     elevCanvas.style.left = graphLeft + 'px';
     elevCanvas.style.top = graphTop + 'px';
     elevCanvas.width = graphWidth;
@@ -504,33 +525,28 @@
     elevCanvas.style.width = graphWidth + 'px';
     elevCanvas.style.height = graphHeight + 'px';
 
-    // 동적 축/그리드/범례/CP 마커 제거
     elevWrap.querySelectorAll('.elev-ytick-label,.elev-xlabels,.elev-xunit,.elev-gridline,.cp-elev-marker').forEach(e=>e.remove());
 
-    // 고도축 단계
     const dynamicMax = Math.ceil(Math.max(...elevations)/100)*100;
     const yTicks = getDynamicElevationTicks(dynamicMax);
-    const minY = yTicks[0], maxY = yTicks[yTicks.length-2]; // 마지막 단계는 여유공간
+    const minY = yTicks[0], maxY = yTicks[yTicks.length-2];
 
-    // y축 레이블, 그리드선
+    // y축 레이블, 그리드선(최상위 강조X, 전부 동일)
     yTicks.forEach((y, i) => {
-      // 그래프 내 y좌표
       let yPos;
       if (i < yTicks.length-1) {
         yPos = graphTop + graphHeight - ((y-minY)/(maxY-minY))*graphHeight - 1;
       } else {
         yPos = graphTop;
       }
-      // 레이블(맨위 제외)
       if (i < yTicks.length-1) {
         const label = document.createElement('div');
-        label.className = 'elev-ytick-label' + (i===yTicks.length-2?' elev-ytick-label-top':'');
+        label.className = 'elev-ytick-label';
         label.textContent = y + 'm';
         label.style.top = `${yPos-8}px`;
         label.style.left = `${graphLeft-7}px`;
         elevWrap.appendChild(label);
       }
-      // 그리드라인 (전체)
       const grid = document.createElement('div');
       grid.className = 'elev-gridline';
       grid.style.top = `${yPos}px`;
@@ -539,7 +555,7 @@
       elevWrap.appendChild(grid);
     });
 
-    // x축 라벨 (10km마다)
+    // x축 라벨 (10km마다, 블루)
     const totalKm = distances[distances.length-1]/1000;
     const xlabels = document.createElement('div');
     xlabels.className = 'elev-xlabels';
@@ -554,17 +570,19 @@
       el.style.left = ((k/totalKm)*graphWidth)+'px';
       el.style.transform = 'translateX(-50%)';
       el.style.fontWeight = 'bold';
+      el.style.color = '#16649A';
       el.textContent = k;
       xlabels.appendChild(el);
     }
     elevWrap.appendChild(xlabels);
-    // x축 단위
+    // x축 단위(블루)
     const xunit = document.createElement('div');
     xunit.className = 'elev-xunit';
     xunit.textContent = '거리(km)';
     xunit.style.left = (graphLeft + graphWidth/2) + 'px';
     xunit.style.bottom = '0px';
     xunit.style.position = 'absolute';
+    xunit.style.color = '#16649A';
     elevWrap.appendChild(xunit);
 
     // 차트(그래프 라인)
@@ -611,20 +629,30 @@
       }
     });
 
-    // 고도표 마우스오버
+    // 고도표 마우스오버: 지도와 동일하게 동작, 지도도 연동
     elevCanvas.onmousemove=function(e){
       const rect = e.target.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const idx = Math.round((x / rect.width) * (elevations.length-1));
       if (elevations[idx] && distances[idx]) {
+        // 그래프 툴팁
         showElevTooltip(e.clientX, rect.top, `<b>${(distances[idx]/1000).toFixed(2)}km</b>, <b>${elevations[idx]}m</b>`);
         showElevationHover(idx);
+        // 지도 툴팁+마커
+        if (latlngs[idx]) {
+          const pt = latlngs[idx];
+          const latlng = L.latLng(pt[0], pt[1]);
+          showMapTooltip(latlng, `<b>${(distances[idx]/1000).toFixed(2)}km</b>, <b>${elevations[idx]}m</b>`);
+          updateGraphHoverMarker(idx); // 지도에 빨간 마커 표시
+        }
         lastTooltipIdx = idx;
       }
     };
     elevCanvas.onmouseleave = function(){
       hideElevTooltip();
       hideElevationHover();
+      hideMapTooltip();
+      removeGraphHoverMarker();
       lastTooltipIdx = null;
     };
 
@@ -642,9 +670,7 @@
         const ratio = (cp.km-d1)/(d2-d1);
         elev = e1 + (e2-e1)*ratio;
       }
-      // x좌표: 그래프 내
       const left = graphLeft + (cp.km/totalKm) * graphWidth;
-      // y좌표: 그래프 내
       const y = graphTop + (1 - (elev - minY) / (maxY - minY)) * graphHeight;
       const marker = document.createElement('div');
       marker.className = 'cp-elev-marker';
