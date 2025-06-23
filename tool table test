@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>트레일러닝 장비 소개</title>
+  <style>
+    body {
+      font-family: 'Pretendard','Noto Sans KR',sans-serif;
+      padding: 20px;
+      background: #fff;
+      color: #000;
+    }
+    h2 {
+      text-align: center;
+      font-size: 2em;
+      margin: 0 0 8px;
+      font-weight: 700;
+    }
+    .equipment-container hr {
+      border: 0;
+      border-bottom: 2px solid #e30017;
+      margin-bottom: 16px;
+    }
+    table.equipment-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 0.95em;
+    }
+    /* 헤더 */
+    table.equipment-table thead th {
+      text-align: center;
+      padding: 12px;
+      background: #e30017;
+      color: #fff;
+      font-weight: 700;
+      border-bottom: 2px solid #e30017;
+    }
+    /* 구분 셀 (vertical text) */
+    .section-header {
+      background: #e30017;
+      color: #fff;
+      font-weight: 700;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      text-align: center;
+      padding: 8px;
+      vertical-align: middle;
+      width: 1%;
+    }
+    /* 품목 아이콘 + 텍스트 */
+    td.item {
+      display: flex;
+      align-items: center;
+      padding: 8px;
+      white-space: pre-wrap;
+    }
+    td.item img {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      margin-right: 8px;
+    }
+    /* 필수 장비 배경 (연핑크) */
+    .mandatory td:nth-child(n+3) {
+      background: rgba(227,0,23,0.05);
+    }
+    /* 체크 아이콘 */
+    td.check {
+      text-align: center;
+      vertical-align: middle;
+      padding: 8px;
+    }
+    td.check img {
+      width: 20px;
+      height: 20px;
+    }
+    /* 권장 텍스트 */
+    td.recommended {
+      text-align: center;
+      vertical-align: middle;
+      color: #e30017;
+      font-weight: 700;
+      padding: 8px;
+    }
+    /* 기타(권장) 구분 */
+    .other-section td:nth-child(1) {
+      background: #f4f4f4;
+    }
+    /* 경계선 */
+    table.equipment-table td,
+    table.equipment-table th {
+      border: 1px solid #eee;
+    }
+  </style>
+</head>
+<body>
+  <div class="equipment-container">
+    <h2>트레일러닝 장비 소개</h2>
+    <hr>
+    <table class="equipment-table" id="cutoffncp">
+      <thead>
+        <tr>
+          <th>구분</th>
+          <th>품목</th>
+          <th>109K</th>
+          <th>50K</th>
+          <th>30K</th>
+          <th>20K</th>
+          <th>15K</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- ── 필수 장비 (11개) ── -->
+        <tr class="mandatory">
+          <td rowspan="11" class="section-header">필수 장비</td>
+          <td class="item">
+            <img src="https://img.icons8.com/ios-filled/24/000000/running-shoe.svg" alt="러닝화"/>
+            트레일 러닝화
+          </td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+        </tr>
+        <tr class="mandatory">
+          <td class="item">
+            <img src="https://img.icons8.com/ios-filled/24/000000/smartphone.svg" alt="스마트폰"/>
+            스마트폰/GPS<br><small>-위치확인, 긴급시</small>
+          </td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+        </tr>
+        <tr class="mandatory">
+          <td class="item">
+            <img src="https://img.icons8.com/ios-filled/24/000000/whistle.svg" alt="호루라기"/>
+            호루라기
+          </td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+        </tr>
+        <tr class="mandatory">
+          <td class="item">
+            <img src="https://img.icons8.com/ios-filled/24/000000/blanket.svg" alt="블랭킷"/>
+            서바이벌 블랭킷
+          </td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+        </tr>
+        <tr class="mandatory">
+          <td class="item">
+            <img src="https://img.icons8.com/ios-filled/24/000000/backpack.svg" alt="배낭"/>
+            러닝 베스트·배낭 등
+          </td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+        </tr>
+        <tr class="mandatory">
+          <td class="item">
+            <img src="https://img.icons8.com/ios-filled/24/000000/first-aid-kit.svg" alt="응급처치키트"/>
+            응급처치 키트
+          </td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+        </tr>
+        <tr class="mandatory">
+          <td class="item">
+            <img src="https://img.icons8.com/ios-filled/24/000000/jacket.svg" alt="바람막이"/>
+            바람막이 자켓
+          </td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+        </tr>
+        <tr class="mandatory">
+          <td class="item">
+            <img src="https://img.icons8.com/ios-filled/24/000000/flashlight.svg" alt="헤드랜턴"/>
+            헤드랜턴<br><small>-2개 필요시</small>
+          </td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+        </tr>
+        <tr class="mandatory">
+          <td class="item">
+            <img src="https://img.icons8.com/ios-filled/24/000000/banana.svg" alt="뉴트리션"/>
+            행동식량·뉴트리션
+          </td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+        </tr>
+        <tr class="mandatory">
+          <td class="item">
+            <img src="https://img.icons8.com/ios-filled/24/000000/water-bottle.svg" alt="물통"/>
+            물통 또는 물팩<br><small>-1리터 이상</small>
+          </td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+        </tr>
+        <tr class="mandatory">
+          <td class="item">
+            <img src="https://img.icons8.com/ios-filled/24/000000/cup.svg" alt="물컵"/>
+            개인 물컵<br><small>-별도 지참</small>
+          </td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+        </tr>
+
+        <!-- ── 기타 (권장) ── -->
+        <tr class="other-section">
+          <td rowspan="6" class="section-header">기타<br>(권장)</td>
+          <td class="item">
+            <img src="https://img.icons8.com/ios-filled/24/000000/battery-charging.svg" alt="보조배터리"/>
+            보조배터리<br><small>-용기 필수</small>
+          </td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="recommended">권장</td>
+          <td class="recommended">권장</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr class="other-section">
+          <td class="item">
+            <img src="https://img.icons8.com/ios-filled/24/000000/trekking-pole.svg" alt="스틱/폴"/>
+            스틱·폴<br><small>-장거리 필수</small>
+          </td>
+          <td class="check"><img src="https://img.icons8.com/ios-filled/20/e30017/checkmark.svg"/></td>
+          <td class="recommended">권장</td>
+          <td class="recommended">권장</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr class="other-section">
+          <td class="item">
+            <img src="https://img.icons8.com/ios-filled/24/000000/baseball-cap.svg" alt="모자/버프/장갑"/>
+            모자/버프/장갑
+          </td>
+          <td></td><td></td><td></td><td></td><td></td>
+        </tr>
+        <tr class="other-section">
+          <td class="item">
+            <img src="https://img.icons8.com/ios-filled/24/000000/sunglasses.svg" alt="선글라스/카프가드"/>
+            선글라스/카프가드
+          </td>
+          <td></td><td></td><td></td><td></td><td></td>
+        </tr>
+        <tr class="other-section">
+          <td class="item">
+            <img src="https://img.icons8.com/ios-filled/24/000000/reflector.svg" alt="후방등/아광테이프"/>
+            후방등/아광테이프
+          </td>
+          <td></td><td></td><td></td><td></td><td></td>
+        </tr>
+        <tr class="other-section">
+          <td class="item">
+            <img src="https://img.icons8.com/ios-filled/24/000000/cash.svg" alt="현금/배번호"/>
+            현금 1만원·배번호
+          </td>
+          <td></td><td></td><td></td><td></td><td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
