@@ -236,6 +236,54 @@
     }
     .cp-elev-label-cp { font-size: 0.795em; font-weight: 800; line-height: 1.0; }
     .cp-elev-label-km { font-size: 0.57em; font-weight: 500; color: #e53935; line-height: 1.0; margin-top:2px; }
+    .cp-map-dot-label {
+      position: absolute;
+      top: -38px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: transparent;
+      color: #fff;
+      font-weight: 700;
+      font-size: 2.2em;
+      border-radius: 1.1em;
+      padding: 0.18em 1.13em;
+      border: none;
+      box-shadow: none;
+      text-align: center;
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 999;
+      font-family: Pretendard, Arial, sans-serif;
+      letter-spacing: 0.01em;
+      text-shadow: 0 1px 5px #0009;
+    }
+    .cp-map-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #e53935;
+      display: block;
+      border: none;
+    }
+    .balloon-label {
+      position: absolute; 
+      background: transparent !important;
+      color: #fff !important;
+      font-weight:700;
+      font-size:2.2em;
+      border-radius:1.1em; padding:0.18em 1.13em; 
+      border: none !important;
+      box-shadow:none;text-align:center;white-space:nowrap;
+      pointer-events: none;z-index:999;
+      transform: translate(-50%, -120%);
+      font-family: Pretendard, Arial, sans-serif;
+      text-shadow: 0 1px 5px #0009;
+    }
+    .balloon-arrow {
+      width:0; height:0; border-left:9px solid transparent; border-right:9px solid transparent;
+      border-top:12px solid #fff; position:absolute; left:50%; transform:translateX(-50%); top:98%;
+      z-index:999;
+    }
     .map-tooltip {
       position: absolute; z-index: 9999;
       background: #b12d2d; color: #fff;
