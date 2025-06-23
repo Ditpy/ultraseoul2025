@@ -113,7 +113,6 @@
       box-shadow: none;
       overflow: visible;
       margin: 0 auto;
-      padding: 0 0 0 20px;
     }
     #elevation {
       position: absolute;
@@ -128,8 +127,8 @@
       position: absolute;
       vertical-align: center;
       left: 0;
-      width: 60px;
-      height: 100px;
+      width: 80px;
+      height: 400px;
       display: flex;
       align-items: center;
       justify-content: flex-end;
@@ -279,9 +278,13 @@
       left: 0; top: 0;
       display: none;
     }
+    .elev-gridline, .elev-xlabels {
+      left: 80px;
+      width: calc(100% - 80px);
+    }
     .elev-gridline {
       position: absolute;
-      left: 60px; right: 0;
+      right: 0;
       height: 1px;
       background: #ededed;
       opacity: 1;
@@ -636,6 +639,7 @@
         label.textContent = y + 'm';
         label.style.top = `${yPos-24}px`;
         label.style.left = `0px`;
+        label.style.width = Y_AXIS_WIDTH + 'px';   // ← y축 라벨 공간추가!
         elevWrap.appendChild(label);
       }
       const grid = document.createElement('div');
