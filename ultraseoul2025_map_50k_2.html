@@ -126,9 +126,10 @@
     }
     .elev-yunit {
       position: absolute;
+      vertical-align: center;
       left: 0;
       width: 60px;
-      height: 48px;
+      height: 100px;
       display: flex;
       align-items: center;
       justify-content: flex-end;
@@ -138,12 +139,11 @@
       text-align: right;
       pointer-events: none;
       z-index: 2;
-      white-space: nowrap;
+      white-space: nomal;
+       word-break: keep-all;
+      word-break: break-all;  /* 필요시 단어 중간 줄바꿈 */
       letter-spacing: 0.01em;
-      background: #fff;
-      border-radius: 8px;
       box-sizing: border-box;
-      padding-right: 8px;
     }
     .elev-xlabels {
       position: absolute; left:60px; width:calc(100% - 60px); display:flex; justify-content:space-between; pointer-events:none;
@@ -184,7 +184,7 @@
     .cp-elev-label {
       position: absolute; left: 50%; transform: translateX(-50%);
       color: #e53935; font-weight: 800;
-      font-size: 1.125em;
+      font-size: 1.2em;
       line-height:1.1; white-space: nowrap; z-index: 11; background: transparent; padding:0;
       letter-spacing: 0.01em;
       text-shadow: 0 1px 6px #fff9;
@@ -194,7 +194,8 @@
       width: 32px;
       justify-content: center;
       align-items: center;
-      height: 24px;
+      height: 36px;
+      margin-bottom: 20px;
     }
     .cp-elev-label-cp { font-size: 0.795em; font-weight: 800; line-height: 1.0; }
     .cp-elev-label-km { font-size: 0.57em; font-weight: 500; color: #e53935; line-height: 1.0; margin-top:2px; }
