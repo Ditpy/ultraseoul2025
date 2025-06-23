@@ -358,13 +358,16 @@
   // === 이하 JS는 이전 정상 동작 버전 전체 복원 ===
 
   // 고정값
-  const CP_LABEL_HEIGHT = 13;
-  const CP_LABEL_TOP_MARGIN = 3;
+  const CP_LABEL_HEIGHT = 28;
+  const CP_LABEL_TOP_MARGIN = 12;
   const Y_AXIS_WIDTH = 80;
   const X_AXIS_HEIGHT = 80;
   const ELEV_CANVAS_MIN_HEIGHT = 180;
   const ELEV_CANVAS_MIN_WIDTH = 300;
   const graphLeft = Y_AXIS_WIDTH; // 좌측 여백
+  const CP_LABEL_TOP_MARGIN = 12;
+  const GRAPH_TOP_MARGIN = CP_LABEL_HEIGHT + CP_LABEL_TOP_MARGIN + 8;
+
   let initialMapView = { center: [37.57,127.02], zoom: 11 };
     
 
@@ -603,7 +606,7 @@
     const wrapWidth = elevWrap.offsetWidth;
     const wrapHeight = elevWrap.offsetHeight;
     const graphLeft = Y_AXIS_WIDTH;
-    const graphTop = CP_LABEL_HEIGHT + CP_LABEL_TOP_MARGIN;
+    const graphTop = GRAPH_TOP_MARGIN;
     const graphWidth = Math.max(wrapWidth - Y_AXIS_WIDTH - 10, ELEV_CANVAS_MIN_WIDTH);
     const graphHeight = Math.max(wrapHeight - graphTop - X_AXIS_HEIGHT, ELEV_CANVAS_MIN_HEIGHT);
 
@@ -648,7 +651,7 @@
       elevWrap.appendChild(grid);
     });
 
-    // x축 고정 범례 방식으로 y축 범례(고도(m)) 고정 생성
+    // y축 범례(고도(m)) 고정 생성
     const yunitWrap = document.createElement('div');
     yunitWrap.className = 'elev-yunit-wrap';
     yunitWrap.style.position = 'absolute';
