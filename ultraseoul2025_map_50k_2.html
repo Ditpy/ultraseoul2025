@@ -86,7 +86,6 @@
       margin: 0;
       z-index: 5;
     }
-    /* === 공간 분리된 y축 라벨/고도단위 === */
     .elev-yunit-wrap {
       position: absolute;
       left: 0; top: 50%;
@@ -104,7 +103,6 @@
       font-size: 16px;
       font-weight: bold;
       letter-spacing: 0.01em;
-      /* writing-mode: vertical-rl; */
       text-align: center;
       user-select: none;
     }
@@ -171,7 +169,7 @@
 <body>
   <div id="container">
     <div id="map">
-      <!-- ...지도 컨트롤 등 생략... -->
+      <!-- 지도 컨트롤 등 생략 -->
     </div>
     <div id="lowerbox">
       <div id="infoBar">
@@ -210,6 +208,7 @@
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="https://unpkg.com/chart.js@4.4.1/dist/chart.umd.js"></script>
   <script>
+  // === 고정값 ===
   const CP_LABEL_HEIGHT = 28;
   const CP_LABEL_TOP_MARGIN = 12;
   const Y_AXIS_WIDTH = 80;
@@ -221,8 +220,103 @@
   const graphLeft = Y_AXIS_WIDTH;
   const GRAPH_TOP_MARGIN = CP_LABEL_HEIGHT + CP_LABEL_TOP_MARGIN + 8;
 
-  // 이하 지도/GPX 관련 생략...
+  // === GPX/지도/차트 관련 변수 ===
+  let gpxUrl = './ultraseoul2025_50k_gm.gpx';
+  let CPs = [
+    {name:'CP1', km:10},
+    {name:'CP2', km:20},
+    {name:'CP3', km:30},
+    {name:'CP4', km:45}
+  ];
+  let map, chart, elevations=[], distances=[], latlngs=[];
+  let totalAsc=0, totalDesc=0, maxEle=0, minEle=0;
+  let mapTooltip, mapHoverMarker, lastTooltipIdx = null;
+  let trackPolyline = null;
+  let graphHoverMarker = null;
 
+  function updateInfoBar() {
+    document.getElementById('infoDistance').innerHTML = distances.length ? `<span style="color:#e53935;">${(distances[distances.length-1]/1000).toFixed(2)}km</span>` : '--';
+    document.getElementById('infoAsc').innerHTML = `<span style="color:#e53935;">${Math.round(totalAsc)}m</span>`;
+    document.getElementById('infoDesc').innerHTML = `<span style="color:#e53935;">${Math.round(totalDesc)}m</span>`;
+    document.getElementById('infoMaxEle').innerHTML = `<span style="color:#e53935;">${maxEle}m</span>`;
+    document.getElementById('infoMinEle').innerHTML = `<span style="color:#e53935;">${minEle}m</span>`;
+  }
+
+  function getDistance(lat1,lon1,lat2,lon2){
+    const R=6371000,toRad=x=>x*Math.PI/180;
+    const dLat=toRad(lat2-lat1),dLon=toRad(lon2-lon1);
+    const a=Math.sin(dLat/2)**2+Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+    return 2*R*Math.asin(Math.sqrt(a));
+  }
+
+  function setupMap() {
+    if (map) map.remove();
+    map = L.map('map', {
+      dragging:true, 
+      touchZoom:true,
+      zoomSnap: 0.1,
+      zoomDelta: 0.2,
+      inertia: true,
+      inertiaDeceleration: 1500,
+      inertiaMaxSpeed: 1000,
+      keyboard:false,
+      doubleClickZoom:false,
+      boxZoom:false,
+      zoomControl:false,
+      attributionControl:false
+    }).setView([37.57,127.02], 11);
+
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom:17,
+      attribution:'Tiles © Esri, Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community'
+    }).addTo(map);
+  }
+
+  function addCourseLine() {
+    if (trackPolyline) map.removeLayer(trackPolyline);
+
+    trackPolyline = L.polyline(latlngs, {
+      color: '#C31B20',
+      weight: 5,
+      opacity: 1,
+      lineCap: 'round',
+      className: 'leaflet-interactive'
+    }).addTo(map);
+
+    // CP 마커 및 라벨
+    CPs.forEach((cp, i) => {
+      let idx = distances.findIndex(d=>d/1000 >= cp.km);
+      if(idx < 0) idx = distances.length-1;
+      const latlng = latlngs[idx];
+      const dotIcon = L.divIcon({
+        className: '',
+        html: `<span class="cp-map-dot"></span>`,
+        iconSize: [16,16],
+        iconAnchor: [8,8]
+      });
+      L.marker(latlng, {icon:dotIcon, interactive:false}).addTo(map);
+
+      const labelHtml = `<div class="cp-map-dot-label">${cp.name}</div>`;
+      const labelDiv = L.divIcon({
+        className: '',
+        html: labelHtml,
+        iconAnchor: [0,0]
+      });
+      L.marker(latlng, {icon:labelDiv, interactive:false}).addTo(map);
+    });
+
+    // START/FINISH 마커
+    [
+      {idx:0, html:`<div class="balloon-label">START<div class="balloon-arrow"></div></div>`},
+      {idx:latlngs.length-1, html:`<div class="balloon-label">FINISH<div class="balloon-arrow"></div></div>`}
+    ].forEach(obj=>{
+      L.marker(latlngs[obj.idx], {
+        icon: L.divIcon({className:'', html:obj.html, iconAnchor:[0,0]})
+      }).addTo(map);
+    });
+  }
+
+  // --- drawElevationChart 함수는 기존 코드 그대로 사용 ---
   function drawElevationChart() {
     if (!elevations.length || !distances.length) return;
     const elevWrap = document.getElementById('elevationCanvasWrap');
@@ -259,8 +353,8 @@
         label.className = 'elev-yunit';
         label.textContent = y + 'm';
         label.style.top = `${yPos-24}px`;
-        label.style.left = Y_AXIS_LABEL_WIDTH + 'px';   // ← 24px부터
-        label.style.width = Y_UNIT_WIDTH + 'px';         // ← 56px만 사용
+        label.style.left = Y_AXIS_LABEL_WIDTH + 'px';
+        label.style.width = Y_UNIT_WIDTH + 'px';
         elevWrap.appendChild(label);
       }
       const grid = document.createElement('div');
@@ -278,7 +372,7 @@
     yunitWrap.style.left = '0px';
     yunitWrap.style.top = '50%';
     yunitWrap.style.transform = 'translateY(-50%)';
-    yunitWrap.style.width = Y_AXIS_LABEL_WIDTH + 'px'; // 24px
+    yunitWrap.style.width = Y_AXIS_LABEL_WIDTH + 'px';
     yunitWrap.style.height = '120px';
     yunitWrap.style.display = 'flex';
     yunitWrap.style.flexDirection = 'column';
@@ -289,8 +383,54 @@
     elevWrap.appendChild(yunitWrap);
 
     // 이하 x축, 그래프 코드 동일...
-    // (생략: 기존 drawElevationChart 함수의 나머지 부분)
+    // (생략)
   }
+
+  function getDynamicElevationTicks(elevMax) {
+    const step = Math.ceil((elevMax / 4) / 100) * 100;
+    return [0, step, step*2, step*3, step*4, step*5];
+  }
+
+  // === GPX 데이터 fetch 및 전체 로딩 ===
+  window.onload = function() {
+    setupMap();
+
+    fetch(gpxUrl)
+      .then(res=>{
+        if (!res.ok) throw new Error('GPX 파일이 없습니다.');
+        return res.text();
+      })
+      .then(xmlText=>{
+        const parser=new DOMParser();
+        const xml=parser.parseFromString(xmlText,"application/xml");
+        const trkpts=xml.querySelectorAll('trkpt');
+        latlngs=[]; elevations=[]; distances=[0];
+        trkpts.forEach((pt,i)=>{
+          const lat=+pt.getAttribute('lat'), lon=+pt.getAttribute('lon');
+          const ele=+pt.querySelector('ele').textContent;
+          latlngs.push([lat,lon]); elevations.push(ele);
+          if(i>0) distances[i]=distances[i-1]+getDistance(latlngs[i-1][0],latlngs[i-1][1],lat,lon);
+        });
+        totalAsc=0; totalDesc=0; maxEle=0; minEle = elevations[0]||0;
+        for(let i=1;i<elevations.length;i++){
+          const diff=elevations[i]-elevations[i-1];
+          if(diff>0) totalAsc+=diff; else totalDesc-=diff;
+          if (elevations[i]>maxEle) maxEle=Math.round(elevations[i]);
+          if (elevations[i]<minEle) minEle=Math.round(elevations[i]);
+        }
+        map.fitBounds(L.polyline(latlngs).getBounds(),{padding:[20,20]});
+        updateInfoBar();
+        addCourseLine();
+        drawElevationChart();
+      })
+      .catch(err => {
+        alert(err.message);
+      });
+
+    window.addEventListener('resize', () => {
+      drawElevationChart();
+    });
+  };
   </script>
 </body>
 </html>
