@@ -86,6 +86,7 @@
       margin: 0;
       z-index: 5;
     }
+    /* === y축 관련 CSS: main 브랜치 최신본 그대로 사용 === */
     .elev-yunit-wrap {
       position: absolute;
       left: 0; top: 50%;
@@ -125,6 +126,7 @@
       letter-spacing: 0.01em;
       box-sizing: border-box;
     }
+    /* --- 나머지 스타일은 최신 템플릿과 동일 --- */
     .elev-gridline, .elev-xlabels {
       position: absolute;
       left: 80px;
@@ -168,9 +170,7 @@
 </head>
 <body>
   <div id="container">
-    <div id="map">
-      <!-- 지도 컨트롤 등 생략 -->
-    </div>
+    <div id="map"></div>
     <div id="lowerbox">
       <div id="infoBar">
         <div id="infoBarInner">
@@ -316,7 +316,7 @@
     });
   }
 
-  // --- drawElevationChart 함수는 기존 코드 그대로 사용 ---
+  // --- drawElevationChart 함수는 main 브랜치 최신본(=현재 보고있는 코드) 그대로 사용 ---
   function drawElevationChart() {
     if (!elevations.length || !distances.length) return;
     const elevWrap = document.getElementById('elevationCanvasWrap');
