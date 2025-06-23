@@ -629,7 +629,7 @@
     const yTicks = getDynamicElevationTicks(dynamicMax);
     const minY = yTicks[0], maxY = yTicks[yTicks.length-2];
 
-    // y축 라벨 및 grid (2버전 구조)
+    // y축 라벨 및 grid
     yTicks.forEach((y, i) => {
       let yPos;
       if (i < yTicks.length-1) {
@@ -642,8 +642,8 @@
         label.className = 'elev-yunit';
         label.textContent = y + 'm';
         label.style.top = `${yPos-24}px`;
-        label.style.left = Y_AXIS_LABEL_WIDTH + 'px'; // 24px
-        label.style.width = Y_UNIT_WIDTH + 'px';       // 56px
+        label.style.left = Y_AXIS_LABEL_WIDTH + 'px';
+        label.style.width = Y_UNIT_WIDTH + 'px';
         elevWrap.appendChild(label);
       }
       const grid = document.createElement('div');
@@ -654,15 +654,14 @@
       elevWrap.appendChild(grid);
     });
 
-    // y축 범례(고도(m)) 고정 생성 (graphTop, graphHeight 중앙 기준)
+    // y축 범례(고도(m)) 고정 생성 (그래프 영역의 중앙 기준)
     const yunitWrap = document.createElement('div');
     yunitWrap.className = 'elev-yunit-wrap';
     yunitWrap.style.position = 'absolute';
     yunitWrap.style.left = '0px';
-    // 중앙을 elevation 캔버스(graphTop ~ graphTop+graphHeight) 기준으로 맞춤
     yunitWrap.style.top = (graphTop + graphHeight/2) + 'px';
     yunitWrap.style.transform = 'translateY(-50%)';
-    yunitWrap.style.width = Y_AXIS_LABEL_WIDTH + 'px'; // 24px
+    yunitWrap.style.width = Y_AXIS_LABEL_WIDTH + 'px';
     yunitWrap.style.height = '120px';
     yunitWrap.style.display = 'flex';
     yunitWrap.style.flexDirection = 'column';
@@ -672,8 +671,26 @@
     yunitWrap.innerHTML = `<span class="elev-yunit-label">고도(m)</span>`;
     elevWrap.appendChild(yunitWrap);
 
-    // x축 라벨 (2번 구조)
-    // (간략화, 원한다면 3버전의 x축 라벨코드를 넣어도 무방)
+    // x축 라벨(5km 단위)
+    const totalKm = distances[distances.length-1]/1000;
+    const xlabels = document.createElement('div');
+    xlabels.className = 'elev-xlabels';
+    xlabels.style.bottom = (X_AXIS_HEIGHT-20) + 'px';
+    xlabels.style.left = graphLeft + 'px';
+    xlabels.style.width = graphWidth + 'px';
+    xlabels.style.position = 'absolute';
+    for(let k=0; k<=Math.floor(totalKm)+1; k+=5){
+      const el = document.createElement('span');
+      el.className = 'elev-xlabel';
+      el.style.position = 'absolute';
+      el.style.left = ((k/totalKm)*graphWidth)+'px';
+      el.style.transform = 'translateX(-50%)';
+      el.style.fontWeight = 600;
+      el.style.color = '#888';
+      el.textContent = k;
+      xlabels.appendChild(el);
+    }
+    elevWrap.appendChild(xlabels);
 
     // x축 단위(거리(km) distance)
     const xunitWrap = document.createElement('div');
@@ -753,7 +770,6 @@
     };
 
     // CP 마커 (dot, 라인, 텍스트 x축 중앙정렬, 소수점 없이 반올림, 크기 1/3로)
-    const totalKm = distances[distances.length-1]/1000;
     CPs.forEach(cp=>{
       let idx = distances.findIndex(d=>d/1000 >= cp.km);
       if(idx < 0) idx = distances.length-1;
