@@ -127,8 +127,8 @@
     /* === y축 라벨/고도단위 분리 구조 === */
     .elev-yunit-wrap {
       position: absolute;
-      left: 0; top: 50%;
-      transform: translateY(-50%);
+      left: 0;
+      /* top은 JS로 graphTop + graphHeight/2 기준으로 설정 */
       width: 24px;
       height: 120px;
       display: flex;
@@ -654,12 +654,13 @@
       elevWrap.appendChild(grid);
     });
 
-    // y축 범례(고도(m)) 고정 생성 (2번 구조)
+    // y축 범례(고도(m)) 고정 생성 (graphTop, graphHeight 중앙 기준)
     const yunitWrap = document.createElement('div');
     yunitWrap.className = 'elev-yunit-wrap';
     yunitWrap.style.position = 'absolute';
     yunitWrap.style.left = '0px';
-    yunitWrap.style.top = '50%';
+    // 중앙을 elevation 캔버스(graphTop ~ graphTop+graphHeight) 기준으로 맞춤
+    yunitWrap.style.top = (graphTop + graphHeight/2) + 'px';
     yunitWrap.style.transform = 'translateY(-50%)';
     yunitWrap.style.width = Y_AXIS_LABEL_WIDTH + 'px'; // 24px
     yunitWrap.style.height = '120px';
