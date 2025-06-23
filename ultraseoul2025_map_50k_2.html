@@ -166,6 +166,18 @@
       letter-spacing: 0.01em;
       margin-bottom: 1px;
     }
+
+    .elev-yunit-wrap {
+      z-index: 4;
+    }
+    .elev-yunit-label {
+      color: #888;
+      font-size: 16px;
+      font-weight: bold;
+      letter-spacing: 0.01em;
+      writing-mode: vertical-rl; /* 세로로 출력, 가로로 원하면 이 줄 삭제 */
+      text-align: center;
+    }
     .cp-elev-marker {
       position: absolute; width: 0; pointer-events: none;
       z-index: 10;
@@ -184,7 +196,7 @@
     .cp-elev-label {
       position: absolute; left: 50%; transform: translateX(-50%);
       color: #e53935; font-weight: 800;
-      font-size: 1.2em;
+      font-size: 1.8em;
       line-height:1.1; white-space: nowrap; z-index: 11; background: transparent; padding:0;
       letter-spacing: 0.01em;
       text-shadow: 0 1px 6px #fff9;
@@ -636,6 +648,23 @@
       elevWrap.appendChild(grid);
     });
 
+    // x축 고정 범례 방식으로 y축 범례(고도(m)) 고정 생성
+    const yunitWrap = document.createElement('div');
+    yunitWrap.className = 'elev-yunit-wrap';
+    yunitWrap.style.position = 'absolute';
+    yunitWrap.style.left = '0px';
+    yunitWrap.style.top = '50%';
+    yunitWrap.style.transform = 'translateY(-50%)';
+    yunitWrap.style.width = Y_AXIS_WIDTH + 'px';
+    yunitWrap.style.height = '120px'; // 필요시 조절
+    yunitWrap.style.display = 'flex';
+    yunitWrap.style.flexDirection = 'column';
+    yunitWrap.style.justifyContent = 'center';
+    yunitWrap.style.alignItems = 'center';
+    yunitWrap.style.pointerEvents = 'none';
+    yunitWrap.innerHTML = `<span class="elev-yunit-label">고도(m)</span>`;
+    elevWrap.appendChild(yunitWrap);
+    
     // x축 라벨
     const totalKm = distances[distances.length-1]/1000;
     const xlabels = document.createElement('div');
