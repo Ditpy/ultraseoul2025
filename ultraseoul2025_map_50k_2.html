@@ -113,7 +113,7 @@
       box-shadow: none;
       overflow: visible;
       margin: 0 auto;
-      padding: 0;
+      padding: 0 0 0 20px;
     }
     #elevation {
       position: absolute;
@@ -347,11 +347,13 @@
   // 고정값
   const CP_LABEL_HEIGHT = 13;
   const CP_LABEL_TOP_MARGIN = 3;
-  const Y_AXIS_WIDTH = 60;
+  const Y_AXIS_WIDTH = 80;
   const X_AXIS_HEIGHT = 80;
   const ELEV_CANVAS_MIN_HEIGHT = 180;
   const ELEV_CANVAS_MIN_WIDTH = 300;
+  const graphLeft = Y_AXIS_WIDTH; // 좌측 여백
   let initialMapView = { center: [37.57,127.02], zoom: 11 };
+    
 
   // 변경값
   let gpxUrl = './ultraseoul2025_50k_gm.gpx';
@@ -669,7 +671,7 @@
     Chart.defaults.borderColor = "#ededed";
     const grad = ctx.createLinearGradient(0,0,0,graphHeight);
     grad.addColorStop(0, "rgba(22,100,154,0.19)");
-    grad.addColorStop(1, "rgba(22,100,154,0)");
+    grad.addColorStop(1, "rgba(22,100,154,0)");ㄹ
     chart = new Chart(ctx,{
       type:'line',
       data:{
