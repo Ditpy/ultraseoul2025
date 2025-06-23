@@ -146,25 +146,19 @@
       text-align: center;
       user-select: none;
     }
-    .elev-yunit {
-      position: absolute;
-      left: 24px;
-      width: 56px;
-      height: 100px;
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      color: #888;
-      font-size: 15.5px;
-      font-weight: 600;
-      text-align: right;
-      pointer-events: none;
-      z-index: 2;
-      white-space: normal;
-      word-break: break-all;
-      letter-spacing: 0.01em;
-      box-sizing: border-box;
-    }
+  .elev-yunit {
+    position: absolute;
+    left: 24px;
+    width: 56px;
+    color: #888;
+    font-size: 15.5px;
+    font-weight: 600;
+    text-align: right;
+    pointer-events: none;
+    z-index: 2;
+    letter-spacing: 0.01em;
+    box-sizing: border-box;
+  }
     .elev-gridline, .elev-xlabels {
       position: absolute;
       left: 80px;
@@ -641,7 +635,7 @@
         const label = document.createElement('div');
         label.className = 'elev-yunit';
         label.textContent = y + 'm';
-        label.style.top = `${yPos-24}px`;
+        label.style.top = `${yPos}px`;
         label.style.left = Y_AXIS_LABEL_WIDTH + 'px';
         label.style.width = Y_UNIT_WIDTH + 'px';
         elevWrap.appendChild(label);
