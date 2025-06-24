@@ -39,7 +39,7 @@
       background: #fff;
     }
     thead th {
-      border-bottom: 2px solid #c9c9c9;
+      border-bottom: 2px solid #e70013; /* 레드 라인 */
       background: #fff;
       color: #222;
       font-weight: 700;
@@ -76,15 +76,37 @@
       color: #222;
       font-weight: 500;
       vertical-align: middle;
-      background: #fff;
+      background: #fff !important; /* 품목 열은 항상 흰색 */
     }
-    .essential-row-red .item-cell,
-    .basic-row-red .item-cell {
+    /* 물컵 체크박스 셀: 배경 없음 */
+    .cup-row .check {
+      background: #fff !important;
+    }
+    /* 필수/기본장비 교차 row coloring */
+    .essential-row-red td:not(.item-cell):not(.category),
+    .basic-row-red td:not(.item-cell):not(.category) {
       background: rgba(231,0,19,0.15);
     }
-    .essential-row-white .item-cell,
-    .basic-row-white .item-cell {
+    .essential-row-white td:not(.item-cell):not(.category),
+    .basic-row-white td:not(.item-cell):not(.category) {
       background: #fff;
+    }
+    /* 체크박스 */
+    .check, .optional {
+      text-align: center;
+      vertical-align: middle;
+      font-size: 1.7em;
+      background: inherit;
+    }
+    .check svg {
+      width: 28px;
+      height: 28px;
+      color: #e70013;
+    }
+    .optional {
+      color: #666;
+      font-size: 1em;
+      font-weight: 400;
     }
     /* 아이콘 가리기 */
     .item-cell img {
@@ -102,22 +124,6 @@
       margin-left: 3px;
       font-weight: 400;
     }
-    .check, .optional {
-      text-align: center;
-      vertical-align: middle;
-      font-size: 1.7em;
-    }
-    .check svg {
-      width: 28px;
-      height: 28px;
-      color: #e70013;
-      filter: none;
-    }
-    .optional {
-      color: #666;
-      font-size: 1em;
-      font-weight: 400;
-    }
     .footer {
       font-size: 1.02em;
       color: #222;
@@ -125,11 +131,6 @@
       margin: 16px 0 20px 20px;
       letter-spacing: -0.5px;
     }
-    /* 교차 row background for 필수장비/기본장비 */
-    .essential-row-red { background: rgba(231,0,19,0.15); }
-    .essential-row-white { background: #fff; }
-    .basic-row-red { background: rgba(231,0,19,0.15); }
-    .basic-row-white { background: #fff; }
     @media (max-width: 800px) {
       .table-wrap {max-width: 99%;}
       h1 {font-size: 1.2rem;}
@@ -270,9 +271,9 @@
         <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
         <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
       </tr>
-      <!-- 기본장비 구분 -->
-      <tr class="basic-row-red">
-        <td class="category" rowspan="1" style="background:#f7f7f7; color:#666;">기본<br>장비</td>
+      <!-- 기타(권장) 구분 -->
+      <tr class="cup-row">
+        <td class="category-etc" rowspan="7">기타<br>(권장)</td>
         <td class="item-cell">
           <img src="" alt="물컵" width="28" height="28">
           물컵
@@ -283,9 +284,7 @@
         <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
         <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
       </tr>
-      <!-- 기타(권장) 구분 -->
       <tr>
-        <td class="category-etc" rowspan="6">기타<br>(권장)</td>
         <td class="item-cell">
           <img src="https://cdn.iconscout.com/icon/free/png-256/free-battery-charging-1818050-1537623.png" alt="보조배터리" width="28" height="28">
           보조배터리
