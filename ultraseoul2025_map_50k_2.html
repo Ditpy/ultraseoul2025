@@ -8,16 +8,66 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <style>
     html, body { margin:0; padding:0; background:#191c1d; font-family:Pretendard,'Segoe UI',Arial,sans-serif;}
-    #container { width:1080px; min-height:100vh; margin:0 auto; display:flex; flex-direction:column; align-items:center; background:#191c1d;}
-    #map { width:1080px; height:600px; max-width:100vw; position:relative; border-radius:0; box-shadow:none; background:#222; transition: height 0.25s;}
-    @media (max-width: 1200px) {
-      #container, #map, #lowerbox { width:100vw !important; min-width:0; }
-      #map { height: 55vw; min-height:320px; max-height:90vh;}
-    }
-    @media (max-width: 700px) {
-      #map { height: 56vw; min-height:200px; }
-      #lowerbox { width:100vw !important; }
-    }
+
+#container {
+  width: 960px;
+  min-height: 786px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #191c1d;
+}
+#map {
+  width: 960px;
+  height: 540px;
+  position: relative;
+  border-radius: 0;
+  box-shadow: none;
+  background: #222;
+  transition: height 0.25s;
+}
+#lowerbox {
+  width: 960px;
+  height: 246px;
+}
+
+/* 태블릿 구간 (비율 고정, 사이즈만 줄어듦) */
+@media (max-width: 1023px) and (min-width: 700px) {
+  #container {
+    width: 80vw;
+    min-width: 0;
+    min-height: calc(80vw * 0.81875);
+  }
+  #map {
+    width: 80vw;
+    height: calc(80vw * 0.5625);
+  }
+  #lowerbox {
+    width: 80vw;
+    height: calc(80vw * 0.25625);
+  }
+}
+
+/* 모바일 구간 (map 100vw, 9:16 비율, lowerbox=map height의 40%) */
+@media (max-width: 699px) {
+  #container {
+    width: 100vw;
+    min-width: 0;
+    min-height: calc(56.25vw + 22.5vw);
+  }
+  #map {
+    width: 100vw;
+    height: 56.25vw;  /* 9:16 비율 */
+    min-height: 200px;
+  }
+  #lowerbox {
+    width: 100vw;
+    height: 22.5vw;   /* map height의 40% */
+    min-height: 100px;
+  }
+}
+    
     #map-controls {
       position: absolute;
       top: 20px;
@@ -71,7 +121,7 @@
       height: auto;
     }
     #infoBar {
-      width: 1080px; height: 84px;
+      width: 1080px; height: 76px;
       display: flex; align-items: center; justify-content: center;
       background: #fff;
       border-radius: 0; box-shadow: none; border: none;
@@ -86,10 +136,10 @@
       min-width: 110px; height: 100%; text-align: center;
     }
     .infoLabel {
-      color: #878d96; font-size: 1.05em; font-weight: 400; margin-bottom: 0.12em; line-height: 1.14; letter-spacing: 0.01em;
+      color: #878d96; font-size: 0.95em; font-weight: 400; margin-bottom: 0.12em; line-height: 1.14; letter-spacing: 0.01em;
     }
     .infoValue {
-      color: #e53935; font-size: 1.32em; font-weight: 700; letter-spacing: 0.01em; margin-top: 0.10em; line-height: 1.3;
+      color: #e53935; font-size: 1.2em; font-weight: 700; letter-spacing: 0.01em; margin-top: 0.10em; line-height: 1.3;
     }
     #elevationBox {
       width: 100%;
