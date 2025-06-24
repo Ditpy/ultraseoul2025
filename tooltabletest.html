@@ -76,6 +76,19 @@
       color: #222;
       font-weight: 500;
       vertical-align: middle;
+      background: #fff;
+    }
+    .essential-row-red .item-cell,
+    .basic-row-red .item-cell {
+      background: rgba(231,0,19,0.15);
+    }
+    .essential-row-white .item-cell,
+    .basic-row-white .item-cell {
+      background: #fff;
+    }
+    /* 아이콘 가리기 */
+    .item-cell img {
+      display: none !important;
     }
     .item-cell .desc {
       font-size: .92em;
@@ -100,13 +113,6 @@
       color: #e70013;
       filter: none;
     }
-    .check.red-filter svg {
-      filter: invert(21%) sepia(97%) saturate(4900%) hue-rotate(346deg) brightness(110%) contrast(119%);
-      color: #e70013;
-    }
-    .icon-black {
-      filter: brightness(0) invert(0) !important;
-    }
     .optional {
       color: #666;
       font-size: 1em;
@@ -119,19 +125,11 @@
       margin: 16px 0 20px 20px;
       letter-spacing: -0.5px;
     }
-    /* 교차 row background for 필수장비 */
-    .essential-row-red {
-      background: rgba(231,0,19,0.15);
-    }
-    .essential-row-white {
-      background: #fff;
-    }
-    .essential-cell-red {
-      background: rgba(231,0,19,0.15);
-    }
-    .essential-cell-white {
-      background: #fff;
-    }
+    /* 교차 row background for 필수장비/기본장비 */
+    .essential-row-red { background: rgba(231,0,19,0.15); }
+    .essential-row-white { background: #fff; }
+    .basic-row-red { background: rgba(231,0,19,0.15); }
+    .basic-row-white { background: #fff; }
     @media (max-width: 800px) {
       .table-wrap {max-width: 99%;}
       h1 {font-size: 1.2rem;}
@@ -160,22 +158,20 @@
     <tbody>
       <!-- 필수장비 구분. 교차 row coloring 적용 -->
       <tr class="essential-row-red">
-        <td class="category" rowspan="9">필수<br>장비</td>
+        <td class="category" rowspan="10">필수<br>장비</td>
         <td class="item-cell">
-          <!-- 트레일 러닝화: running shoe -->
-          <img class="icon-black" src="https://cdn-iconscout.com/icon/free/png-256/free-running-shoes-2202276-1850302.png" alt="트레일 러닝화" width="32" height="32">
+          <img src="https://cdn-iconscout.com/icon/free/png-256/free-running-shoes-2202276-1850302.png" alt="트레일 러닝화" width="32" height="32">
           트레일 러닝화
         </td>
-        <td class="check red-filter"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
-        <td class="check red-filter"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
-        <td class="check red-filter"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
-        <td class="check red-filter"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
-        <td class="check red-filter"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
+        <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
+        <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
+        <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
+        <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
+        <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
       </tr>
       <tr class="essential-row-white">
         <td class="item-cell">
-          <!-- 스마트폰: smartphone -->
-          <img class="icon-black" src="https://cdn-iconscout.com/icon/free/png-256/free-phone-1828651-1552888.png" alt="스마트폰/GPS" width="28" height="28">
+          <img src="https://cdn-iconscout.com/icon/free/png-256/free-phone-1828651-1552888.png" alt="스마트폰/GPS" width="28" height="28">
           <span style="color:#18b76a;">스마트폰/GPS</span>
           <span class="desc">- 위치 확인, 긴급 시</span>
         </td>
@@ -187,20 +183,18 @@
       </tr>
       <tr class="essential-row-red">
         <td class="item-cell">
-          <!-- 호루라기: whistle -->
-          <img class="icon-black" src="https://cdn-iconscout.com/icon/free/png-256/free-whistle-192-461818.png" alt="호루라기" width="28" height="28">
+          <img src="https://cdn-iconscout.com/icon/free/png-256/free-whistle-192-461818.png" alt="호루라기" width="28" height="28">
           호루라기
         </td>
-        <td class="check red-filter"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
-        <td class="check red-filter"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
-        <td class="check red-filter"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
-        <td class="check red-filter"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
-        <td class="check red-filter"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
+        <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
+        <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
+        <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
+        <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
+        <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
       </tr>
       <tr class="essential-row-white">
         <td class="item-cell">
-          <!-- 서바이벌 블랭킷: blanket -->
-          <img class="icon-black" src="https://cdn-iconscout.com/icon/free/png-256/free-blanket-2278350-1896720.png" alt="서바이벌 블랭킷" width="28" height="28">
+          <img src="https://cdn-iconscout.com/icon/free/png-256/free-blanket-2278350-1896720.png" alt="서바이벌 블랭킷" width="28" height="28">
           서바이벌 블랭킷
         </td>
         <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
@@ -211,20 +205,18 @@
       </tr>
       <tr class="essential-row-red">
         <td class="item-cell">
-          <!-- 러닝 베스트/배낭: vest -->
-          <img class="icon-black" src="https://cdn-iconscout.com/icon/free/png-256/free-vest-2515578-2108797.png" alt="러닝 베스트" width="28" height="28">
+          <img src="https://cdn-iconscout.com/icon/free/png-256/free-vest-2515578-2108797.png" alt="러닝 베스트" width="28" height="28">
           러닝 베스트, 배낭 등
         </td>
-        <td class="check red-filter"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
-        <td class="check red-filter"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
-        <td class="check red-filter"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
-        <td class="check red-filter"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
-        <td class="check red-filter"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
+        <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
+        <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
+        <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
+        <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
+        <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
       </tr>
       <tr class="essential-row-white">
         <td class="item-cell">
-          <!-- 응급처치 키트: first aid -->
-          <img class="icon-black" src="https://cdn-iconscout.com/icon/free/png-256/free-first-aid-kit-2107728-1762322.png" alt="응급처치 키트" width="28" height="28">
+          <img src="https://cdn-iconscout.com/icon/free/png-256/free-first-aid-kit-2107728-1762322.png" alt="응급처치 키트" width="28" height="28">
           응급처치 키트
         </td>
         <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
@@ -235,20 +227,18 @@
       </tr>
       <tr class="essential-row-red">
         <td class="item-cell">
-          <!-- 바람막이 자켓: windbreaker -->
-          <img class="icon-black" src="https://cdn.iconscout.com/icon/free/png-256/free-jacket-153-1196262.png" alt="바람막이 자켓" width="28" height="28">
+          <img src="https://cdn.iconscout.com/icon/free/png-256/free-jacket-153-1196262.png" alt="바람막이 자켓" width="28" height="28">
           바람막이 자켓
         </td>
-        <td class="check red-filter"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
-        <td class="check red-filter"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
-        <td class="check red-filter"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
-        <td class="check red-filter"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
-        <td class="check red-filter"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
+        <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
+        <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
+        <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
+        <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
+        <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
       </tr>
       <tr class="essential-row-white">
         <td class="item-cell">
-          <!-- 헤드랜턴: headlamp -->
-          <img class="icon-black" src="https://cdn.iconscout.com/icon/free/png-256/free-headlamp-1896682-1608709.png" alt="헤드랜턴" width="28" height="28">
+          <img src="https://cdn.iconscout.com/icon/free/png-256/free-headlamp-1896682-1608709.png" alt="헤드랜턴" width="28" height="28">
           <span style="color:#18b76a;">헤드랜턴</span>
           <span class="desc">- 2개 필요 시</span>
         </td>
@@ -260,35 +250,44 @@
       </tr>
       <tr class="essential-row-red">
         <td class="item-cell">
-          <!-- 행동식량: food/nutrition -->
-          <img class="icon-black" src="https://cdn.iconscout.com/icon/free/png-256/free-energy-bar-2623228-2188532.png" alt="행동식량/뉴트리션" width="28" height="28">
+          <img src="https://cdn.iconscout.com/icon/free/png-256/free-energy-bar-2623228-2188532.png" alt="행동식량/뉴트리션" width="28" height="28">
           행동식량 / 뉴트리션
         </td>
-        <td class="check red-filter"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
-        <td class="check red-filter"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
-        <td class="check red-filter"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
-        <td class="check red-filter"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
-        <td class="check red-filter"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
+        <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
+        <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
+        <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
+        <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
+        <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
       </tr>
       <tr class="essential-row-white">
         <td class="item-cell">
-          <!-- 물통/물백: water bottle -->
-          <img class="icon-black" src="https://cdn.iconscout.com/icon/free/png-256/free-water-bottle-153-1144926.png" alt="물통 또는 물백" width="28" height="28">
-          물통 또는 물백
-          <span class="desc2">- 지원이상</span>
+          <img src="" alt="물통 또는 플라스크" width="28" height="28">
+          물통 또는 플라스크
         </td>
         <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
         <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
-        <td class="check"></td>
-        <td class="check"></td>
-        <td class="check"></td>
+        <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
+        <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
+        <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
+      </tr>
+      <!-- 기본장비 구분 -->
+      <tr class="basic-row-red">
+        <td class="category" rowspan="1" style="background:#f7f7f7; color:#666;">기본<br>장비</td>
+        <td class="item-cell">
+          <img src="" alt="물컵" width="28" height="28">
+          물컵
+        </td>
+        <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
+        <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
+        <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
+        <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
+        <td class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
       </tr>
       <!-- 기타(권장) 구분 -->
       <tr>
         <td class="category-etc" rowspan="6">기타<br>(권장)</td>
         <td class="item-cell">
-          <!-- 보조배터리: battery -->
-          <img class="icon-black" src="https://cdn.iconscout.com/icon/free/png-256/free-battery-charging-1818050-1537623.png" alt="보조배터리" width="28" height="28">
+          <img src="https://cdn.iconscout.com/icon/free/png-256/free-battery-charging-1818050-1537623.png" alt="보조배터리" width="28" height="28">
           보조배터리
           <span class="desc2">- 장거리 필수</span>
         </td>
@@ -300,8 +299,7 @@
       </tr>
       <tr>
         <td class="item-cell">
-          <!-- 스틱/폴: stick/pole -->
-          <img class="icon-black" src="https://cdn.iconscout.com/icon/free/png-256/free-hiking-stick-1818532-1538190.png" alt="스틱/폴" width="28" height="28">
+          <img src="https://cdn.iconscout.com/icon/free/png-256/free-hiking-stick-1818532-1538190.png" alt="스틱/폴" width="28" height="28">
           스틱 / 폴
           <span class="desc2">- 장거리 필수</span>
         </td>
@@ -313,8 +311,7 @@
       </tr>
       <tr>
         <td class="item-cell">
-          <!-- 모자/버프/장갑: hat -->
-          <img class="icon-black" src="https://cdn.iconscout.com/icon/free/png-256/free-cap-153-1144930.png" alt="모자/버프/장갑" width="28" height="28">
+          <img src="https://cdn.iconscout.com/icon/free/png-256/free-cap-153-1144930.png" alt="모자/버프/장갑" width="28" height="28">
           모자 / 버프 / 장갑
         </td>
         <td class="check"></td>
@@ -325,8 +322,7 @@
       </tr>
       <tr>
         <td class="item-cell">
-          <!-- 선글라스/카프카드: sunglasses -->
-          <img class="icon-black" src="https://cdn.iconscout.com/icon/free/png-256/free-sunglasses-153-1144949.png" alt="선글라스/카프카드" width="28" height="28">
+          <img src="https://cdn.iconscout.com/icon/free/png-256/free-sunglasses-153-1144949.png" alt="선글라스/카프카드" width="28" height="28">
           선글라스 / 카프카드
         </td>
         <td class="check"></td>
@@ -337,8 +333,7 @@
       </tr>
       <tr>
         <td class="item-cell">
-          <!-- 후방등/야광테이프: light -->
-          <img class="icon-black" src="https://cdn.iconscout.com/icon/free/png-256/free-flashlight-1818053-1537626.png" alt="후방등/야광테이프" width="28" height="28">
+          <img src="https://cdn.iconscout.com/icon/free/png-256/free-flashlight-1818053-1537626.png" alt="후방등/야광테이프" width="28" height="28">
           후방등 / 야광테이프
         </td>
         <td class="check"></td>
@@ -349,8 +344,7 @@
       </tr>
       <tr>
         <td class="item-cell">
-          <!-- 현금/비번: cash -->
-          <img class="icon-black" src="https://cdn.iconscout.com/icon/free/png-256/free-cash-1809932-1532457.png" alt="현금/비번" width="28" height="28">
+          <img src="https://cdn.iconscout.com/icon/free/png-256/free-cash-1809932-1532457.png" alt="현금/비번" width="28" height="28">
           현금 1만원 / 비번
         </td>
         <td class="check"></td>
