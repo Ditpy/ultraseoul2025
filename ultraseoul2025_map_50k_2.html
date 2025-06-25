@@ -101,7 +101,7 @@
     min-height: calc(56.25vw + 22.5vw);
   }
   #map {
-    height: 56.25vw;
+    height: 178vw;/* 100의 9:16비율값, 세로길게 */
     min-height: 200px;
   }
   #lowerbox {
@@ -153,6 +153,43 @@
 }
 .map-hover-marker {
   filter: drop-shadow(0 2px 6px #e5393544);
+}
+
+@media (max-width: 1024px) and (min-width: 701px) {
+ .map-tooltip,
+  .cp-map-dot-label {
+    font-size: 12px !important;
+  }
+  #map-controls button {
+    width: 40px !important;
+    height: 40px !important;
+    font-size: 18px !important;
+  }
+  .cp-map-dot-label {
+    top: -32px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .balloon-label { font-size: 1.8em; }
+  .cp-map-dot { width: 8px;   height: 8px; }
+}    
+@media (max-width: 700px) {
+  .map-tooltip,
+  .cp-map-dot-label {
+    font-size: 12px !important;
+  }
+  #map-controls button {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 14px !important;
+  }
+  .cp-map-dot-label {
+    top: -24px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .balloon-label { font-size: 1.4em; }
+  .cp-map-dot { width: 4px;   height: 4px; }
 }
 
 /* === infoBar 내부 === */
@@ -410,8 +447,8 @@
   transform: translate(-50%, -120%);
 }
 .cp-map-dot {
-  width: 16px;
-  height: 16px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: #e53935;
   display: block;
@@ -478,84 +515,6 @@
   pointer-events: none;
 }
 
-
-/* ---------- 태블릿 (701~1024px) ---------- */
-@media (max-width: 1024px) and (min-width: 701px) {
-  .elev-yunit-label,
-  .elev-xunit,
-  .cp-elev-label,
-  #infoBar span,
-  #infoBar div,
-  .elev-xlabel {
-    font-size: 14px !important;
-  }
-  .cp-elev-label-km,
-  .cp-elev-label-cp {
-    font-size: 12px !important;
-  }
-  .elev-xlabel {
-    font-size: 11px !important;
-  }
-  .cp-elev-circle {
-    width: 10px !important;
-    height: 10px !important;
-  }
-  .map-tooltip,
-  .cp-map-dot-label {
-    font-size: 12px !important;
-  }
-  #map-controls button {
-    width: 40px !important;
-    height: 40px !important;
-    font-size: 18px !important;
-  }
-  #infoBar {
-    font-size: 13px !important;
-    padding: 6px 0 !important;
-  }
-  .elev-yunit {
-      font-size: 11px !important;
-  }
-}
-
-/* ---------- 모바일 (700px 이하) ---------- */
-@media (max-width: 700px) {
-  .elev-yunit-label,
-  .elev-xunit,
-  .cp-elev-label,
-  #infoBar span,
-  #infoBar div,
-  .elev-xlabel {
-    font-size: 11px !important;
-  }
-  .cp-elev-label-km,
-  .cp-elev-label-cp {
-    font-size: 8px !important;
-  }
-  .elev-xlabel {
-    font-size: 8px !important;
-  }
-  .cp-elev-circle {
-    width: 6px !important;
-    height: 6px !important;
-  }
-  .map-tooltip,
-  .cp-map-dot-label {
-    font-size: 9px !important;
-  }
-  #map-controls button {
-    width: 32px !important;
-    height: 32px !important;
-    font-size: 14px !important;
-  }
-  #infoBar {
-    font-size: 10px !important;
-    padding: 4px 0 !important;
-  }
-  .elev-yunit {
-    font-size: 8px !important;
-  }
-}
     
     
   </style>
@@ -618,17 +577,31 @@
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="https://unpkg.com/chart.js@4.4.1/dist/chart.umd.js"></script>
   <script>
-  // 고정값
+  // --- 반응형 로직 추가 ---
+  // 디바운스 함수: 이벤트의 과도한 발생을 방지하여 성능을 최적화합니다.
+  function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
+  // 기준 너비: 이 너비를 기준으로 모든 요소의 크기 비율이 결정됩니다.
+  const BASE_WIDTH = 900; 
+  // -------------------------
+
+  // 기존 고정값 (비율 계산의 기초로 사용됨)
   const CP_LABEL_HEIGHT = 28;
   const CP_LABEL_TOP_MARGIN = 12;
   const Y_AXIS_WIDTH = 80;
   const Y_AXIS_LABEL_WIDTH = 24;
-  const Y_UNIT_WIDTH = Y_AXIS_WIDTH - Y_AXIS_LABEL_WIDTH; // 56
   const X_AXIS_HEIGHT = 80;
   const ELEV_CANVAS_MIN_HEIGHT = 50;
   const ELEV_CANVAS_MIN_WIDTH = 80;
-  const graphLeft = Y_AXIS_WIDTH;
-  const GRAPH_TOP_MARGIN = CP_LABEL_HEIGHT + CP_LABEL_TOP_MARGIN + 8;
 
   let initialMapView = { center: [37.57,127.02], zoom: 11 };
 
@@ -719,7 +692,7 @@
   function setupMap() {
     if (map) map.remove();
     map = L.map('map', {
-      dragging:true, 
+      dragging:true,  
       touchZoom:true,
       zoomSnap: 0.1,
       zoomDelta: 0.2,
@@ -814,7 +787,8 @@
       lastTooltipIdx = null;
     });
   }
-
+  
+  // --- 반응형 대응을 위해 showElevationHover 수정 ---
   function showElevationHover(idx) {
     const elevWrap = document.getElementById('elevationCanvasWrap');
     let hover = elevWrap.querySelector('.elev-hoverline');
@@ -824,12 +798,20 @@
       elevWrap.appendChild(hover);
     }
     const elevCanvas = document.getElementById('elevation');
+    
+    // 비율 계산
+    const scaleFactor = elevWrap.offsetWidth / BASE_WIDTH;
+    const scaledCpLabelHeight = CP_LABEL_HEIGHT * scaleFactor;
+    const scaledCpLabelTopMargin = CP_LABEL_TOP_MARGIN * scaleFactor;
+    const scaledGraphTopMargin = scaledCpLabelHeight + scaledCpLabelTopMargin + (8 * scaleFactor);
+
     const left = elevCanvas.offsetLeft + (distances[idx]/distances[distances.length-1])*elevCanvas.offsetWidth;
     hover.style.left = `${left-1}px`;
-    hover.style.top = `${GRAPH_TOP_MARGIN}px`; // 그래프 위쪽 여백만큼 내림
-    hover.style.height = `${elevCanvas.offsetHeight}px`; // 그래프 실제 높이만큼만 표시
+    hover.style.top = `${scaledGraphTopMargin}px`; 
+    hover.style.height = `${elevCanvas.offsetHeight}px`;
     hover.style.width = "2px";
   }
+
   function hideElevationHover() {
     const elevWrap = document.getElementById('elevationCanvasWrap');
     let hover = elevWrap.querySelector('.elev-hoverline');
@@ -861,105 +843,113 @@
     return [0, step, step*2, step*3, step*4, step*5];
   }
 
+  // --- 반응형으로 완전히 새로 작성된 drawElevationChart 함수 ---
   function drawElevationChart() {
     if (!elevations.length || !distances.length) return;
+
     const elevWrap = document.getElementById('elevationCanvasWrap');
     const elevCanvas = document.getElementById('elevation');
     const wrapWidth = elevWrap.offsetWidth;
     const wrapHeight = elevWrap.offsetHeight;
-    const graphTop = GRAPH_TOP_MARGIN;
-    const graphWidth = Math.max(wrapWidth - Y_AXIS_WIDTH - 10, ELEV_CANVAS_MIN_WIDTH);
-    const graphHeight = Math.max(wrapHeight - graphTop - X_AXIS_HEIGHT, ELEV_CANVAS_MIN_HEIGHT);
+
+    // 1. 비율(scaleFactor) 계산
+    const scaleFactor = wrapWidth / BASE_WIDTH;
+
+    // 2. 비율에 따라 모든 크기 값들을 동적으로 계산
+    const scaled = {
+      cpLabelHeight: CP_LABEL_HEIGHT * scaleFactor,
+      cpLabelTopMargin: CP_LABEL_TOP_MARGIN * scaleFactor,
+      yAxisWidth: Y_AXIS_WIDTH * scaleFactor,
+      yAxisLabelWidth: Y_AXIS_LABEL_WIDTH * scaleFactor,
+      xAxisHeight: X_AXIS_HEIGHT * scaleFactor,
+      yUnitFontSize: Math.max(12 * scaleFactor, 8), // 최소 폰트 크기 보장
+      xUnitFontSize: Math.max(12 * scaleFactor, 8),
+      cpLabelFontSize: Math.max(12 * scaleFactor, 8),
+      circleRadius: Math.max(8.5 * scaleFactor, 4),
+      lineWidth: Math.max(2 * scaleFactor, 1)
+    };
+    scaled.yUnitWidth = scaled.yAxisWidth - scaled.yAxisLabelWidth;
+    scaled.graphTopMargin = scaled.cpLabelHeight + scaled.cpLabelTopMargin + (8 * scaleFactor);
+
+    const graphLeft = scaled.yAxisWidth;
+    const graphWidth = Math.max(wrapWidth - scaled.yAxisWidth - (10 * scaleFactor), ELEV_CANVAS_MIN_WIDTH);
+    const graphHeight = Math.max(wrapHeight - scaled.graphTopMargin - scaled.xAxisHeight, ELEV_CANVAS_MIN_HEIGHT);
+    
+    // 이전 요소들 모두 제거
+    elevWrap.querySelectorAll('.elev-yunit,.elev-xlabels,.elev-xunit-wrap,.elev-gridline,.cp-elev-marker,.elev-yunit-wrap').forEach(e=>e.remove());
 
     elevCanvas.style.left = graphLeft + 'px';
-    elevCanvas.style.top = graphTop + 'px';
+    elevCanvas.style.top = scaled.graphTopMargin + 'px';
     elevCanvas.width = graphWidth;
     elevCanvas.height = graphHeight;
     elevCanvas.style.width = graphWidth + 'px';
     elevCanvas.style.height = graphHeight + 'px';
 
-    elevWrap.querySelectorAll('.elev-yunit,.elev-xlabels,.elev-xunit,.elev-xunit-wrap,.elev-gridline,.cp-elev-marker,.elev-yunit-wrap').forEach(e=>e.remove());
-
     const dynamicMax = Math.ceil(Math.max(...elevations)/100)*100;
     const yTicks = getDynamicElevationTicks(dynamicMax);
     const minY = yTicks[0], maxY = yTicks[yTicks.length-2];
 
-    // y축 라벨 및 grid
+    // Y축 라벨 및 그리드 라인 (비율 적용)
     yTicks.forEach((y, i) => {
-      let yPos;
-      if (i < yTicks.length-1) {
-        yPos = graphTop + graphHeight - ((y-minY)/(maxY-minY))*graphHeight - 1;
-      } else {
-        yPos = graphTop;
-      }
+      let yPos = (i < yTicks.length-1)
+        ? scaled.graphTopMargin + graphHeight - ((y-minY)/(maxY-minY))*graphHeight - 1
+        : scaled.graphTopMargin;
+
       if (i < yTicks.length-1) {
         const label = document.createElement('div');
         label.className = 'elev-yunit';
         label.textContent = y + 'm';
-        label.style.top = `${yPos-10}px`;
-        label.style.left = Y_AXIS_LABEL_WIDTH + 'px';
-        label.style.width = Y_UNIT_WIDTH + 'px';
+        label.style.top = `${yPos - (10 * scaleFactor)}px`;
+        label.style.left = scaled.yAxisLabelWidth + 'px';
+        label.style.width = scaled.yUnitWidth + 'px';
+        label.style.fontSize = `${scaled.yUnitFontSize}px`;
         elevWrap.appendChild(label);
       }
       const grid = document.createElement('div');
-      grid.className = (i===yTicks.length-2) ? 'elev-gridline elev-gridline-top' : 'elev-gridline';
+      grid.className = (i === yTicks.length-2) ? 'elev-gridline elev-gridline-top' : 'elev-gridline';
       grid.style.top = `${yPos}px`;
       grid.style.left = graphLeft + 'px';
       grid.style.width = graphWidth + 'px';
       elevWrap.appendChild(grid);
     });
-
-    // y축 범례(고도(m)) 고정 생성 (그래프 영역의 중앙 기준)
+    
+    // Y축 단위 (비율 적용)
     const yunitWrap = document.createElement('div');
     yunitWrap.className = 'elev-yunit-wrap';
-    yunitWrap.style.position = 'absolute';
     yunitWrap.style.left = '0px';
-    yunitWrap.style.top = (graphTop + graphHeight/2) + 'px';
-    yunitWrap.style.transform = 'translateY(-50%)';
-    yunitWrap.style.width = Y_AXIS_LABEL_WIDTH + 'px';
-    yunitWrap.style.height = '120px';
-    yunitWrap.style.display = 'flex';
-    yunitWrap.style.flexDirection = 'column';
-    yunitWrap.style.justifyContent = 'center';
-    yunitWrap.style.alignItems = 'center';
-    yunitWrap.style.pointerEvents = 'none';
-    yunitWrap.innerHTML = `<span class="elev-yunit-label">고도(m)</span>`;
+    yunitWrap.style.top = (scaled.graphTopMargin + graphHeight/2) + 'px';
+    yunitWrap.style.width = scaled.yAxisLabelWidth + 'px';
+    yunitWrap.innerHTML = `<span class="elev-yunit-label" style="font-size:${scaled.yUnitFontSize}px;">고도(m)</span>`;
     elevWrap.appendChild(yunitWrap);
 
-    // x축 라벨(5km 단위)
+    // X축 라벨 (비율 적용)
     const totalKm = distances[distances.length-1]/1000;
     const xlabels = document.createElement('div');
     xlabels.className = 'elev-xlabels';
-    xlabels.style.bottom = (X_AXIS_HEIGHT-20) + 'px';
+    xlabels.style.bottom = (scaled.xAxisHeight - (20 * scaleFactor)) + 'px';
     xlabels.style.left = graphLeft + 'px';
     xlabels.style.width = graphWidth + 'px';
-    xlabels.style.position = 'absolute';
     for(let k=0; k<=Math.floor(totalKm)+1; k+=5){
       const el = document.createElement('span');
       el.className = 'elev-xlabel';
-      el.style.position = 'absolute';
       el.style.left = ((k/totalKm)*graphWidth)+'px';
-      el.style.transform = 'translateX(-50%)';
-      el.style.fontWeight = 600;
-      el.style.color = '#888';
+      el.style.fontSize = `${scaled.xUnitFontSize}px`;
       el.textContent = k;
       xlabels.appendChild(el);
     }
     elevWrap.appendChild(xlabels);
 
-    // x축 단위(거리(km) distance)
+    // X축 단위 (비율 적용)
     const xunitWrap = document.createElement('div');
     xunitWrap.className = 'elev-xunit-wrap';
     xunitWrap.style.left = (graphLeft + graphWidth/2) + 'px';
     xunitWrap.style.bottom = '0px';
-    xunitWrap.style.position = 'absolute';
-    xunitWrap.innerHTML = `<span class="elev-xunit">거리(km) distance</span>`;
+    xunitWrap.innerHTML = `<span class="elev-xunit" style="font-size:${scaled.xUnitFontSize}px;">거리(km) distance</span>`;
     elevWrap.appendChild(xunitWrap);
-
-    // 차트(그래프 라인)
+    
+    // 차트 (비율 적용)
     const ctx = elevCanvas.getContext('2d');
     if(chart) chart.destroy();
-    Chart.defaults.borderColor = "#ededed";
     const grad = ctx.createLinearGradient(0,0,0,graphHeight);
     grad.addColorStop(0, "rgba(22,100,154,0.19)");
     grad.addColorStop(1, "rgba(22,100,154,0)");
@@ -968,35 +958,23 @@
       data:{
         labels: distances.map(m=>(m/1000).toFixed(2)),
         datasets:[{
-          label:'고도(m)',
           data: elevations,
           borderColor: '#16649A',
           backgroundColor: grad,
-          borderWidth: 2,
+          borderWidth: scaled.lineWidth, // 비율 적용
           pointRadius: 0,
           fill: true,
-          tension: 0.13,
-          order: 1,
+          tension: 0.13
         }]
       },
       options:{
-        responsive: false,
-        maintainAspectRatio: false,
-        plugins:{
-          legend:{display:false},
-          tooltip:{enabled:false}
-        },
+        responsive: false, maintainAspectRatio: false,
+        plugins:{ legend:{display:false}, tooltip:{enabled:false} },
         scales:{
-          x: {display:false, grid:{display:false}},
-          y: {
-            display:false,
-            min: minY,
-            max: maxY,
-            grid: {display: false}
-          }
+          x: {display:false},
+          y: {display:false, min: minY, max: maxY}
         },
-        animation: false,
-        events: []
+        animation: false, events: []
       }
     });
 
@@ -1008,9 +986,6 @@
         showElevTooltip(e.clientX, e.clientY, `<b>${(distances[idx]/1000).toFixed(2)}km</b>, <b>${elevations[idx]}m</b>`);
         showElevationHover(idx);
         if (latlngs[idx]) {
-          const pt = latlngs[idx];
-          const latlng = L.latLng(pt[0], pt[1]);
-          showMapTooltip(latlng, `<b>${(distances[idx]/1000).toFixed(2)}km</b>, <b>${elevations[idx]}m</b>`);
           updateGraphHoverMarker(idx);
         }
         lastTooltipIdx = idx;
@@ -1024,7 +999,7 @@
       lastTooltipIdx = null;
     };
 
-    // CP 마커 (dot, 라인, 텍스트 x축 중앙정렬, 소수점 없이 반올림, 크기 1/3로)
+    // CP 마커 (비율 적용)
     CPs.forEach(cp=>{
       let idx = distances.findIndex(d=>d/1000 >= cp.km);
       if(idx < 0) idx = distances.length-1;
@@ -1039,18 +1014,19 @@
         elev = e1 + (e2-e1)*ratio;
       }
       const left = graphLeft + (cp.km/totalKm) * graphWidth;
-      const y = graphTop + (1 - (elev - minY) / (maxY - minY)) * graphHeight;
+      const y = scaled.graphTopMargin + (1 - (elev - minY) / (maxY - minY)) * graphHeight;
+      
       const marker = document.createElement('div');
       marker.className = 'cp-elev-marker';
       marker.style.left = left + "px";
       marker.style.top = "0";
       marker.innerHTML = `
-        <div class="cp-elev-label" style="top:${graphTop-CP_LABEL_HEIGHT-CP_LABEL_TOP_MARGIN}px;">
+        <div class="cp-elev-label" style="top:${scaled.graphTopMargin - scaled.cpLabelHeight - scaled.cpLabelTopMargin}px; font-size:${scaled.cpLabelFontSize}px;">
           <span class="cp-elev-label-cp">${cp.name}</span>
           <span class="cp-elev-label-km">${Math.round(cp.km)}km</span>
         </div>
-        <div class="cp-elev-line" style="top:${graphTop}px;height:${y-graphTop}px;"></div>
-        <div class="cp-elev-circle" style="top:${y-8.5}px;"></div>
+        <div class="cp-elev-line" style="top:${scaled.graphTopMargin}px;height:${y-scaled.graphTopMargin}px;"></div>
+        <div class="cp-elev-circle" style="top:${y-scaled.circleRadius}px; width:${scaled.circleRadius*2}px; height:${scaled.circleRadius*2}px;"></div>
       `;
       elevWrap.appendChild(marker);
     });
@@ -1087,12 +1063,7 @@
         drawElevationChart();
       });
 
-
-    
-    window.addEventListener('resize', () => {
-      drawElevationChart();
-    });
+    // --- resize 이벤트 리스너에 디바운스 적용 ---
+    window.addEventListener('resize', debounce(drawElevationChart, 150));
   };
-  </script>
-</body>
-</html>
+</script>
